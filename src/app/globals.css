@@ -1,0 +1,125 @@
+:root {
+  --ls-bg: #000000;
+  --ls-card: #16181c;
+  --ls-border: #2f3336;
+  --ls-text: #e7e9ea;
+  --ls-muted: #71767b;
+  --ls-accent: #1d9bf0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background: var(--ls-bg);
+  color: var(--ls-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: var(--ls-accent);
+}
+
+.directory {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+.directory__hero h1 {
+  margin: 0 0 0.35rem;
+  font-size: 2rem;
+}
+
+.directory__hero p {
+  color: var(--ls-muted);
+}
+
+.live-space-count {
+  margin: 1.5rem 0;
+}
+
+.live-space-count__value {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.live-space-count__label {
+  color: var(--ls-muted);
+  margin: 0;
+}
+
+.directory-search,
+.directory-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: end;
+  margin: 1rem 0;
+}
+
+.directory-search input,
+.directory-filters input {
+  background: var(--ls-card);
+  border: 1px solid var(--ls-border);
+  color: var(--ls-text);
+  padding: 0.5rem 0.75rem;
+  border-radius: 9999px;
+}
+
+button,
+.space-card__join {
+  background: var(--ls-accent);
+  color: #fff;
+  border: 0;
+  border-radius: 9999px;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.space-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.space-card {
+  background: var(--ls-card);
+  border: 1px solid var(--ls-border);
+  border-radius: 16px;
+  padding: 1rem;
+}
+
+.space-card__header {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.space-card__avatar {
+  border-radius: 9999px;
+}
+
+.space-card__title {
+  font-size: 1.05rem;
+  margin: 0 0 0.25rem;
+}
+
+.space-card__host,
+.space-card__listeners,
+.space-card__timing,
+.space-grid__empty {
+  color: var(--ls-muted);
+}
+
+.recently-shared {
+  margin-top: 3rem;
+}

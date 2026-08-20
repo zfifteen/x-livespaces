@@ -1,2 +1,15 @@
 .idea/
 *.iml
+node_modules/
+.next/
+out/
+dist/
+coverage/
+.turbo/
+.vercel/
+*.tsbuildinfo
+.env
+.env.local
+.env.*.local
+.DS_Store
+npm-debug.log*
