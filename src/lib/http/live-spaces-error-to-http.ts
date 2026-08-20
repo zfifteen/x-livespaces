@@ -28,7 +28,6 @@ export function liveSpacesErrorToHttp(error: LiveSpacesError): HttpErrorBody {
     case "invalid-space-id":
     case "invalid-user-id":
     case "invalid-filters":
-    case "invalid-space-url":
       return { status: 400, kind: error.kind, message, retryAfterSeconds: undefined };
     case "missing-bearer-token":
       return { status: 500, kind: error.kind, message, retryAfterSeconds: undefined };

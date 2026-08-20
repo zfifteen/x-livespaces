@@ -1,26 +1,8 @@
 # LiveSpaces
 
-![LiveSpaces](docs/hero-candidates/03-neon-analog-studio.jpg)
+Public directory of live X Spaces.
 
-**The public directory for every live conversation on X.**
-
-Open it and you see what is happening *right now*: a live count, a searchable grid, and one-click Join. Title, host, listeners, topics, how long it has been running. Filter by keyword, language, and audience size. Dark, fast, and built like a stream directory — Twitch for audio, pointed at X Spaces.
-
-X already has the rooms. LiveSpaces is how people find them.
-
-Hosts get a stage that actually surfaces. Niche rooms in crypto, news, tech, music, and languages stop depending on a lucky post. Journalists, researchers, and community managers get a real-time map of the conversation. Power users get the full board. Casual listeners get something interesting to drop into in ten seconds.
-
-Coverage is hybrid on purpose: official X API for live search, plus public Space links from posts, refreshed every 30–60 seconds. That is how a small room still shows up next to the big one.
-
-**If it is live on X, LiveSpaces puts it on a card you can join.**
-
-This is the go-to destination for discovering and joining live conversations on X. Ship the directory; own discovery.
-
----
-
-## Status
-
-Phase 1 skeleton. Types, module boundaries, and intended control flow are in place. Feature functions return `notImplementedYet`. The directory chrome renders; data routes respond `501` until Phase 3.
+Phase 1 skeleton is on `main`. The directory chrome renders; data routes respond `501` until Phase 3.
 
 Product definition: [`CONCEPT.md`](./CONCEPT.md). MVP tech spec: [`docs/TECH_SPEC.md`](./docs/TECH_SPEC.md). Execution contract: [`PLAN.md`](./PLAN.md). Agent notes: [`AGENTS.md`](./AGENTS.md).
 
@@ -28,32 +10,30 @@ Product definition: [`CONCEPT.md`](./CONCEPT.md). MVP tech spec: [`docs/TECH_SPE
 
 - How many Spaces are live right now
 - Keyword search
-- Cards with title, host, listeners, topics, duration, and a Join button
+- Cards with title, listeners, timing, topics (if present), and a Join button
 - Filters: live only, minimum listeners, language
-- Recently shared Spaces harvested from public posts
+- Manual Refresh (30-minute global cooldown). No tweet/public-post harvest in MVP.
 
 ## Stack
 
 - Next.js 16 App Router + React 19 + TypeScript (strict)
-- Official X API v2 Spaces search (`GET /2/spaces/search`) and lookup
-- Supplementary public-post Space-link monitoring
-- In-memory cache seam (Redis-shaped interface)
+- Official X API v2 Spaces search (`GET /2/spaces/search`) only
+- In-memory cache seam locally; Cloudflare KV in production
 - Vitest, ESLint, Prettier
 
-Official Spaces search requires a keyword. Browse mode uses a short keyword fan-out plus public-link harvest, merged by `SpaceId`.
+Official Spaces search requires a keyword. Browse mode uses vowel fan-out `a e i o u`, union by Space id. No public-post harvest.
 
 ## Repository layout
 
 | Path | Role |
 | --- | --- |
 | `src/domain/` | Branded IDs, cards, filters, `Result`, errors |
-| `src/lib/x-api/` | Bearer client, keyword search, lookup, payload mapping |
-| `src/lib/coverage/` | Parse `/i/spaces/` URLs; harvest ids from public posts |
+| `src/lib/x-api/` | Bearer client, keyword search, payload mapping |
 | `src/lib/directory/` | Merge, filter, load, join URL, timing |
 | `src/lib/cache/` | `LiveDirectoryCache` + process-local singleton |
-| `src/lib/refresh/` | 30–60s directory rebuild |
-| `src/app/` | Home page, `GET /api/spaces`, `POST /api/internal/refresh` |
-| `src/components/directory/` | Count, search, filters, cards, recently shared |
+| `src/lib/refresh/` | Manual rebuild under cooldown |
+| `src/app/` | Home page, `GET /api/spaces`, refresh route |
+| `src/components/directory/` | Count, search, filters, cards |
 
 ## Local setup
 
@@ -85,8 +65,4 @@ Keep tokens in the environment. `.env*.local` stays out of git.
 
 ## Phase 3 start line
 
-Implement one function at a time, with a test and a commit:
-
-1. `parseSpaceIdFromUrl` (pure, no network)
-2. `applyDirectoryFilters`
-3. `readLiveSpacesEnvironment` / `getOfficialXApiJson`
+Daily slices live in `docs/plans/2026-08-20-mvp-daily-implementation.md`. Milestone A removes public-post coverage, host identity, Recently Shared, and cron surfaces before pure domain work begins.

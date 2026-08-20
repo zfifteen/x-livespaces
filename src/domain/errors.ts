@@ -29,11 +29,6 @@ export type LiveSpacesError =
       readonly message: string;
     }
   | {
-      readonly kind: "invalid-space-url";
-      readonly rawValue: string;
-      readonly message: string;
-    }
-  | {
       readonly kind: "x-api-rate-limited";
       readonly retryAfterSeconds: number | undefined;
       readonly message: string;
@@ -63,8 +58,6 @@ export function describeLiveSpacesError(error: LiveSpacesError): string {
     case "invalid-user-id":
       return error.message;
     case "invalid-filters":
-      return error.message;
-    case "invalid-space-url":
       return error.message;
     case "x-api-rate-limited":
       return error.message;
