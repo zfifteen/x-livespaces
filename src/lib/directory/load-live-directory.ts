@@ -1,18 +1,13 @@
 /**
  * Composition root for the directory page and GET /api/spaces.
  *
- * Intended control flow:
+ * Intended control flow (MVP, TECH_SPEC v1.3):
  * 1. Parse / validate filters (caller may pass already-parsed filters).
- * 2. Read cache. If a snapshot is fresh, apply filters to cached cards and
- *    return (liveCount stays the unfiltered live tally from the snapshot).
- * 3. Otherwise call `refreshLiveDirectory` (which writes the cache).
- * 4. Apply filters to the fresh snapshot's cards.
- * 5. recentlySharedCards: cards whose sourceKind is public-post-link or merged,
- *    capped to a small list for the "Recently shared" rail.
- *
- * Partial source failure: if official search fails and public links succeed,
- * still return what we have and let the API layer surface a warning later.
- * Total failure of both sources: return the error.
+ * 2. Read cache once. Never call X or refresh from the read path.
+ * 3. Missing snapshot → defined empty view with caller filters.
+ * 4. Existing snapshot → apply filters to stored cards; preserve unfiltered
+ *    liveCount and stored generatedAt.
+ * 5. recentlySharedCards is empty / unused in MVP (no public-post harvest).
  */
 
 import { notImplementedYet } from "@/domain/result";

@@ -3,18 +3,17 @@
  *
  * Called by the poll job and by `loadLiveDirectory` on cache miss.
  *
- * Intended control flow:
- * 1. Read env (bearer, poll interval).
- * 2. Build the keyword fan-out list. If the visitor supplied a keyword,
- *    prepend it so search is still covered on a cold cache.
- * 3. For each keyword, `searchSpacesByKeyword` with staggered delay so
- *    we stay under rate limits (CONCEPT §6).
- * 4. `searchPublicPostsForSpaceLinks` then `lookupSpacesById`.
+ * Intended control flow (MVP, TECH_SPEC v1.3):
+ * 1. Read env (bearer, cooldown).
+ * 2. If snapshot is fresh (< 1800s), return it without calling X.
+ * 3. Build the keyword fan-out list (vowels a e i o u). If the visitor
+ *    supplied a keyword on a cold cache, prepend it.
+ * 4. For each keyword, `searchSpacesByKeyword`.
  * 5. `mergeDirectorySources`.
  * 6. Count live cards for `liveCount`.
- * 7. Write snapshot `{ generatedAt: now, liveCount, visibleCards: merged,
- *    recentlySharedCards: public/merged subset, appliedFilters: defaults }`.
+ * 7. Write snapshot with coverage official-search (or retain last-good on total failure).
  *    Load-time request filters are applied later in `loadLiveDirectory`.
+ * No tweet / public-post harvest in MVP.
  */
 
 import { notImplementedYet } from "@/domain/result";
