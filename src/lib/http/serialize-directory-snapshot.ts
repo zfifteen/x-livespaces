@@ -4,6 +4,7 @@
  * Intended logic: Dates become ISO-8601 strings; branded ids become plain
  * strings; topic tags stay arrays. Keep field names aligned with
  * `DirectorySnapshot` so the UI can share types later via a generated client.
+ * Host fields are absent in MVP.
  */
 
 import { notImplementedYet } from "@/domain/result";
@@ -27,12 +28,6 @@ export type SerializedDirectorySnapshot = {
 export type SerializedLiveSpaceCard = {
   readonly spaceId: string;
   readonly title: string;
-  readonly host: {
-    readonly userId: string;
-    readonly displayName: string;
-    readonly handle: string;
-    readonly avatarUrl: string;
-  };
   readonly listenerCount: number;
   readonly topicTags: readonly string[];
   readonly languageCode: string | null;
@@ -40,7 +35,7 @@ export type SerializedLiveSpaceCard = {
   readonly startedAt: string | null;
   readonly scheduledStart: string | null;
   readonly joinUrl: string;
-  readonly sourceKind: "official-api" | "public-post-link" | "merged";
+  readonly sourceKind: "official-api";
 };
 
 export function serializeDirectorySnapshot(

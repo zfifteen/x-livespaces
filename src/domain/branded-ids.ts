@@ -1,8 +1,8 @@
 /**
- * Nominal identifiers for Spaces and X users.
+ * Nominal identifier for Spaces.
  *
- * Call these constructors at the trust boundary (API mapping, URL parsing).
- * Downstream code should take `SpaceId` / `UserId` so a raw string cannot
+ * Call the constructor at the trust boundary (API mapping).
+ * Downstream code should take `SpaceId` so a raw string cannot
  * silently wander in.
  */
 
@@ -11,7 +11,6 @@ import type { LiveSpacesError } from "@/domain/errors";
 import type { Result } from "@/domain/result";
 
 export type SpaceId = string & { readonly __brand: "SpaceId" };
-export type UserId = string & { readonly __brand: "UserId" };
 
 /**
  * Accept a raw Space id from the X API or a parsed `/i/spaces/{id}` URL.
@@ -27,14 +26,4 @@ export type UserId = string & { readonly __brand: "UserId" };
 export function spaceIdFromString(rawValue: string): Result<SpaceId, LiveSpacesError> {
   void rawValue;
   return notImplementedYet("spaceIdFromString");
-}
-
-/**
- * Accept a raw numeric X user id from `creator_id` / `host_ids`.
- *
- * Intended logic: trim, require a non-empty digit string, brand as `UserId`.
- */
-export function userIdFromString(rawValue: string): Result<UserId, LiveSpacesError> {
-  void rawValue;
-  return notImplementedYet("userIdFromString");
 }

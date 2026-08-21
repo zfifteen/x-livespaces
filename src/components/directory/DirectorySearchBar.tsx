@@ -20,7 +20,7 @@ export function DirectorySearchBar({ filters }: DirectorySearchBarProps) {
         name="q"
         type="search"
         defaultValue={filters.keywordQuery}
-        placeholder="Search by topic, host, or keyword"
+        placeholder="Search by topic or keyword"
         autoComplete="off"
       />
       {filters.liveOnly ? <input type="hidden" name="live" value="1" /> : null}

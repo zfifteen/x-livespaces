@@ -5,12 +5,12 @@
  * Required query parameter: `query` (keyword). There is no unfiltered
  * "every live Space" call; the directory fan-out layer supplies keywords.
  *
- * Intended logic:
- * 1. Reject empty keywords (caller should use fan-out or public-link harvest).
+ * Intended logic (MVP — no User expansions):
+ * 1. Reject empty keywords (caller should use fan-out).
  * 2. Request `state=live` (or scheduled when filters.liveOnly is false).
- * 3. Ask for space.fields: title, host_ids, creator_id, participant_count,
- *    started_at, scheduled_start, lang, state, topic_ids.
- * 4. Expand `creator_id,host_ids` into user objects for avatars/handles.
+ * 3. Ask for space.fields: title, participant_count, started_at,
+ *    scheduled_start, lang, state.
+ * 4. Do not request expansions or user.fields.
  * 5. Map each payload row through `mapOfficialSpaceToCard`.
  * 6. Drop rows that fail mapping; collect mapping errors for logs, keep the rest.
  */

@@ -7,7 +7,7 @@ describe("applyDirectoryFilters", () => {
 
   it.todo("drops cards below minimumListenerCount");
 
-  it.todo("matches keyword against title, handle, and tags");
+  it.todo("matches keyword against title and topic tags");
 
   it("returns an empty list while the Phase 1 stub is in place", () => {
     expect(applyDirectoryFilters([], DEFAULT_DIRECTORY_FILTERS)).toEqual([]);

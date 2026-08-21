@@ -7,7 +7,7 @@
  * 3. If languageCode is set, keep exact match on `card.languageCode`.
  *    Cards with undefined language drop out of a language-specific view.
  * 4. If keywordQuery is non-empty after trim, case-insensitive match against
- *    title, host handle, host display name, and topic tags.
+ *    title and topic tags only (no host fields in MVP).
  * 5. Preserve original relative order (API relevance / merge order).
  *
  * This function always succeeds for a well-typed `DirectoryFilters` value.

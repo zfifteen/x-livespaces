@@ -20,11 +20,6 @@ export type LiveSpacesError =
       readonly message: string;
     }
   | {
-      readonly kind: "invalid-user-id";
-      readonly rawValue: string;
-      readonly message: string;
-    }
-  | {
       readonly kind: "invalid-filters";
       readonly message: string;
     }
@@ -54,8 +49,6 @@ export function describeLiveSpacesError(error: LiveSpacesError): string {
     case "missing-bearer-token":
       return error.message;
     case "invalid-space-id":
-      return error.message;
-    case "invalid-user-id":
       return error.message;
     case "invalid-filters":
       return error.message;

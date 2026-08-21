@@ -116,7 +116,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S02**
+**NEXT_SLICE: S03**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -129,7 +129,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Verify no source import or prose claims tweet/public-link harvest is in the MVP.
   - Commit: `refactor(mvp): remove public-post coverage`.
 
-- [ ] **S02 — Remove host identity from the MVP domain and cards.**
+- [x] **S02 — Remove host identity from the MVP domain and cards.**
   - Delete: `src/domain/host-identity.ts`.
   - Modify: `src/domain/branded-ids.ts` to remove `UserId` and `userIdFromString`.
   - Modify: `src/domain/live-space-card.ts` to remove `host`; narrow `DirectorySourceKind` to `"official-api"` or remove the field if no branching remains.
@@ -224,213 +224,13 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Commit: `feat(x-api): map official space payloads`.
 
 - [ ] **S15 — Implement one keyword search request.**
-  - Build `/2/spaces/search` with encoded query, `state=live`, `max_results=100`, and approved `space.fields`; include no expansions/user/topic fields.
-  - Inject the JSON client for deterministic tests.
-  - Map readable rows, drop malformed rows when at least one is usable, and define total-unreadable behavior.
+  - Compose `getOfficialXApiJson` + map; fan-out stays separate.
+  - Test empty keyword rejection, field list without expansions, mapping drops, and injected-fetch success path with fixtures.
   - Modify: `src/lib/x-api/search-spaces-by-keyword.ts`; create its test.
-  - Commit: `feat(x-api): search live spaces by keyword`.
+  - Commit: `feat(x-api): search spaces by keyword`.
 
-- [ ] **S16 — Remove lookup-by-ID if no approved call path needs it.**
-  - Confirm `TECH_SPEC.md` implementation path never uses lookup without harvest.
-  - Delete `src/lib/x-api/lookup-spaces-by-id.ts` and references.
-  - Keep only behavior required by vowel/visitor-query search.
-  - Commit: `refactor(x-api): remove unused space lookup`.
+## 5. Final acceptance (after last slice)
 
-- [ ] **S17 — Implement vowel fan-out orchestration.**
-  - Return exactly five canonical vowels by default; prepend one trimmed visitor query only for cold-cache refresh; deduplicate case-insensitively.
-  - Execute searches with injected search function.
-  - Preserve usable batches under partial failure and return an error when every search fails.
-  - Test call order, deduplication, partial failure, and total failure.
-  - Modify: `src/lib/x-api/fan-out-live-space-keywords.ts`; create its test.
-  - Commit: `feat(x-api): fan out live space searches`.
-
-### Milestone D — Local cache and read/write composition
-
-- [ ] **S18 — Implement the in-memory cache adapter.**
-  - Keep state private to each adapter instance; read-before-write returns `undefined`; write/read preserves the domain snapshot without shared test leakage.
-  - Add a test-only reset only if dependency injection cannot provide isolation.
-  - Modify: `src/lib/cache/live-directory-cache.ts`; create its test.
-  - Commit: `feat(cache): add in-memory directory cache`.
-
-- [ ] **S19 — Implement cooldown freshness calculation.**
-  - Test younger than 1800s, exactly 1800s, older, future timestamp, non-positive max age, and invalid dates.
-  - Modify `snapshotIsFresh` and its tests.
-  - Commit: `feat(cache): enforce refresh cooldown freshness`.
-
-- [ ] **S20 — Implement `refreshLiveDirectory` success and cooldown paths.**
-  - Inject cache, environment reader, fan-out/search function, and clock inputs.
-  - Fresh snapshot returns it with `refreshed: false` and zero X calls.
-  - Missing/stale snapshot performs vowel fan-out, merges, computes unfiltered live count, writes defaults plus `coverage: "official-search"`, and returns `refreshed: true`.
-  - Visitor `q` is included only on a cold cache as specified.
-  - Modify: `src/lib/refresh/refresh-live-directory.ts`; create focused tests.
-  - Commit: `feat(refresh): rebuild directory snapshots`.
-
-- [ ] **S21 — Implement last-good snapshot recovery.**
-  - Test total X failure with prior snapshot leaves the stored snapshot unchanged and returns a view marked `cached-after-failure`.
-  - Test total failure with empty cache follows the explicitly documented empty-initial-state behavior.
-  - Test partial success writes the usable result.
-  - Modify refresh code/tests only.
-  - Commit: `feat(refresh): preserve last good snapshot`.
-
-- [ ] **S22 — Implement read-only `loadLiveDirectory`.**
-  - Read cache once; never call refresh or X.
-  - Missing snapshot returns a defined empty view with caller filters.
-  - Existing snapshot applies filters to stored cards while preserving unfiltered `liveCount` and stored `generatedAt`.
-  - Cache read failures propagate as domain errors.
-  - Modify: `src/lib/directory/load-live-directory.ts`; create its test.
-  - Commit: `feat(directory): load filtered cached snapshots`.
-
-### Milestone E — HTTP and UI vertical slices
-
-- [ ] **S23 — Wire public JSON `GET /api/spaces`.**
-  - Parse request filters, call `loadLiveDirectory`, serialize, map errors, and set `Access-Control-Allow-Origin: *` only here.
-  - Add route tests for 200 populated/empty snapshots and 400 filters; remove obsolete 501 expectations.
-  - Modify: `src/app/api/spaces/route.ts` and route tests.
-  - Commit: `feat(api): serve public spaces directory`.
-
-- [ ] **S24 — Wire SSR home page and metadata.**
-  - Parse App Router search params, load cached snapshot, render `DirectoryPageShell`, and provide a safe error/empty state.
-  - Set title, CONCEPT description, index/follow robots, and OG image using the neon analog hero.
-  - Test server-rendered headings, filter round-trip, and missing snapshot copy at the most stable available layer.
-  - Modify: `src/app/page.tsx`, `src/app/layout.tsx`, relevant components/tests.
-  - Commit: `feat(web): render cached live directory`.
-
-- [ ] **S25 — Finalize cards, filters, timing, and Join semantics.**
-  - Show title, listeners, timing, topics if present, and Join.
-  - Use `target="_blank"`, `rel="noopener noreferrer"`, and `data-space-id`.
-  - Preserve all filters across search and filter GET forms; verify last `live` param behavior.
-  - Replace Phase 1 empty/timing copy with MVP copy.
-  - Add focused React/component tests only if the project’s test setup can support them without unnecessary tooling; otherwise verify SSR HTML/build plus pure helpers.
-  - Commit: `feat(web): finalize directory cards and filters`.
-
-- [ ] **S26 — Add the manual Refresh route.**
-  - Create `src/app/api/spaces/refresh/route.ts`.
-  - Public POST invokes refresh composition, returns snapshot metadata plus `refreshed`, and maps missing bearer/X errors.
-  - Cooldown clicks return 200 and `refreshed: false`; concurrent safety relies on the shared snapshot contract and is documented.
-  - Test fresh, stale, missing, rate-limited, and last-good paths with injected dependencies.
-  - Commit: `feat(refresh): add public refresh endpoint`.
-
-- [ ] **S27 — Add the Refresh client control.**
-  - Create a minimal client component for POST, in-flight disabled state, success/error feedback, and page refresh/revalidation after success.
-  - Display “Refresh” before a snapshot and “Refreshed N min ago” during cooldown using deterministic server-provided timing where practical.
-  - Keep GET rendering independent of client JavaScript.
-  - Modify `DirectoryPageShell`, `LiveSpaceCount`, CSS, and add focused tests.
-  - Commit: `feat(web): add manual refresh control`.
-
-### Milestone F — Analytics and production persistence
-
-- [ ] **S28 — Implement the privacy-preserving Join beacon.**
-  - Add a small client boundary that calls `navigator.sendBeacon("/api/analytics/join", JSON.stringify({ spaceId }))` without blocking navigation.
-  - Validate Space ID in `POST /api/analytics/join`; reject malformed bodies.
-  - Define an injected `JoinMetricStore` that records Space ID and UTC day only.
-  - Test client trigger and server validation without real network/storage.
-  - Commit: `feat(analytics): record join beacons`.
-
-- [ ] **S29 — Implement local join metrics storage and document Web Analytics.**
-  - Supply a process-local metric adapter for `next dev` and tests.
-  - Add README instructions for enabling Cloudflare Web Analytics at the zone, with no fingerprinting SDK.
-  - Ensure no user ID, IP, user agent, or first-party cookie enters metric payloads.
-  - Commit: `feat(analytics): add privacy-safe local metrics`.
-
-- [ ] **S30 — Implement the Cloudflare KV directory adapter.**
-  - Create `src/lib/cache/kv-live-directory-cache.ts` with a minimal structural KV interface to keep tests independent of Wrangler globals.
-  - Key: `snapshot:v1`; serialize/deserialize dates and validate unknown stored JSON.
-  - Add fake-KV tests for missing, populated, corrupt, and write/read paths.
-  - Do not use the Next/OpenNext incremental-cache namespace.
-  - Commit: `feat(cache): add Cloudflare KV directory adapter`.
-
-- [ ] **S31 — Select local or Worker cache at the shared-cache boundary.**
-  - Make `getSharedLiveDirectoryCache()` use bound `LIVE_DIRECTORY` in Workers and the singleton in-memory adapter in `next dev`.
-  - Keep runtime detection explicit and testable; missing production binding fails clearly.
-  - Test adapter selection without importing unavailable Worker globals in Node.
-  - Commit: `feat(cache): select runtime directory storage`.
-
-- [ ] **S32 — Implement Cloudflare join metric storage.**
-  - Use a separate metrics binding or approved Analytics Engine adapter; never collide with `LIVE_DIRECTORY` or OpenNext incremental cache.
-  - Key/counter contract: `metrics:joins:{yyyy-mm-dd}` with Space ID/day-only detail as approved by the spec.
-  - Add fake binding tests and wire the production adapter.
-  - Commit: `feat(analytics): persist Cloudflare join metrics`.
-
-### Milestone G — Cloudflare/OpenNext and release gates
-
-- [ ] **S33 — Add OpenNext and Wrangler configuration.**
-  - Re-check current official OpenNext/Cloudflare docs before pinning versions or CLI flags.
-  - Add required packages and scripts, `wrangler.toml`/JSON config, `nodejs_compat`, and distinct binding placeholders for directory, OpenNext cache, and metrics.
-  - Never commit real namespace IDs or secrets unless the config format explicitly requires non-secret resource IDs and the operator supplied them.
-  - Verify local production-shaped build.
-  - Commit: `build(cloudflare): configure OpenNext worker`.
-
-- [ ] **S34 — Add CI quality gates.**
-  - Create GitHub Actions workflow for Node 22 install, typecheck, Vitest, lint, and build.
-  - Use no bearer token and make all tests fixture-only.
-  - Verify workflow syntax locally where possible and confirm the pushed check is green.
-  - Commit: `ci: verify LiveSpaces quality gates`.
-
-- [ ] **S35 — Complete local end-to-end acceptance without live X.**
-  - Seed the in-memory/fake KV through a documented development fixture path that cannot activate in production.
-  - Verify SSR count/cards/filters/Join, public JSON+CORS, cooldown, Refresh state, stale recovery, and beacon acceptance.
-  - Remove or guard any temporary harness; retain reusable fixtures/tests.
-  - Capture exact commands and expected observations in README.
-  - Commit: `test: verify local MVP flow`.
-
-- [ ] **S36 — Perform the operator-authorized live X smoke test.**
-  - This is the only slice allowed to call live X.
-  - Require `X_API_BEARER_TOKEN` from `.env.local` or approved secret store; never print it.
-  - Call one controlled refresh after cooldown, verify five vowel searches via safe instrumentation, inspect resulting card count/shape, then verify a second refresh makes zero X calls.
-  - Record only non-secret observations. If credentials are unavailable, leave this slice unchecked and blocked.
-  - Commit documentation only if it changes durable setup/verification guidance: `docs: record live X smoke procedure`.
-
-- [ ] **S37 — Provision Cloudflare resources and deploy.**
-  - Require operator-approved Cloudflare account/zone/resource choices.
-  - Create distinct KV/analytics/OpenNext resources, set `X_API_BEARER_TOKEN` with Wrangler secret tooling, and deploy the OpenNext Worker.
-  - Do not place payment/account-recovery data or secrets in files/chat.
-  - Capture deployment URL and resource binding names from real command output.
-  - Commit config updates only when they contain safe resource identifiers: `chore(deploy): bind production Cloudflare resources`.
-
-- [ ] **S38 — Verify production MVP and close the plan.**
-  - Read back the deployed homepage, `/api/spaces`, refresh endpoint, CORS, headers, metadata, Join target/rel, cooldown behavior, last-good behavior, Join beacon response, and Cloudflare Web Analytics enablement.
-  - Confirm the public JSON edge rate limit is configured at 60 requests/minute/IP or document the exact deployed alternative.
-  - Run final local quality gates and confirm production remains healthy.
-  - Update README status from skeleton to deployed MVP.
-  - Set `NEXT_SLICE: COMPLETE`, check final acceptance below, and commit/push: `docs: mark LiveSpaces MVP complete`.
-
-## 5. Final acceptance checklist
-
-### Product
-
-- [ ] Anonymous visitors receive an SSR directory or defined empty state.
-- [ ] Live count reflects unfiltered live cards in the snapshot.
-- [ ] Keyword, live-only, minimum-listener, and language filters compose correctly.
-- [ ] Cards show approved MVP fields and open official Space URLs safely.
-- [ ] Manual Refresh works and communicates cooldown/in-flight state.
-- [ ] Recently Shared, host UI, tweet harvest, cron, accounts, PWA, and topic pages remain absent.
-
-### Data and resilience
-
-- [ ] Browse refresh uses exactly `a e i o u`, plus visitor `q` only on cold cache.
-- [ ] Stored snapshot is unfiltered.
-- [ ] Refresh inside 1,800 seconds performs zero X calls.
-- [ ] Partial search success produces a usable snapshot.
-- [ ] Total refresh failure preserves the last-good stored snapshot.
-- [ ] Automated tests and CI perform zero live X calls.
-
-### API, security, and privacy
-
-- [ ] `GET /api/spaces` is public, filtered, serialized, and CORS-enabled.
-- [ ] Refresh and X errors map to documented HTTP statuses.
-- [ ] Secrets remain solely in `.env.local`/Wrangler secret storage.
-- [ ] Public JSON edge rate limiting is active.
-- [ ] Join analytics retain only Space ID and UTC day.
-- [ ] Cloudflare Web Analytics is enabled without a fingerprinting SDK.
-
-### Engineering and deployment
-
-- [ ] `npm run typecheck`, `npm test`, `npm run lint`, and `npm run build` pass.
-- [ ] CI passes on `main` without secrets.
-- [ ] Local `next dev` uses in-memory cache.
-- [ ] Worker runtime uses dedicated Cloudflare KV via `LIVE_DIRECTORY`.
-- [ ] OpenNext incremental cache and metrics use separate storage.
-- [ ] Production URL is deployed and read-back verified.
 - [ ] README accurately documents setup, API, refresh, deployment, and current status.
 
 ## 6. Blockers and discovered work
@@ -448,6 +248,7 @@ Out-of-scope discoveries go here and wait for a later plan: custom domain, edita
 | 2026-08-20 | PLAN | Plan authored from TECH_SPEC v1.3 and operator decisions; implementation has not started. | Pending plan commit |
 | 2026-08-20 | S01 | Coverage modules deleted; `invalid-space-url` removed. Six commits instead of one. | refactor(mvp): remove public-post coverage |
 | 2026-08-20 | PLAN | Restored full plan (S03–S38, §5–8) after S01 run truncated the file. | docs: restore truncated daily MVP plan |
+| 2026-08-21 | S02 | Host identity removed; UserId gone; cards/UI/serialize/map/search comments aligned; typecheck/tests/lint/build green. | refactor(mvp): remove host identity from space cards |
 
 ## 8. Daily completion report template
 
