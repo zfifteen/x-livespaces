@@ -116,7 +116,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S03**
+**NEXT_SLICE: S04**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -138,7 +138,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Verify no X user expansions are represented by the domain contract.
   - Commit: `refactor(mvp): remove host identity from space cards`.
 
-- [ ] **S03 — Remove Recently Shared and cron refresh surfaces.**
+- [x] **S03 — Remove Recently Shared and cron refresh surfaces.**
   - Delete: `src/components/directory/RecentlySharedSpaces.tsx`.
   - Delete: `src/app/api/internal/refresh/route.ts`.
   - Modify: `src/components/directory/DirectoryPageShell.tsx`.
@@ -193,9 +193,9 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Commit: `feat(directory): merge and rank official search results`.
 
 - [ ] **S11 — Implement snapshot serialization.**
+  - Test a populated and empty snapshot without JSON round-trip ambiguity.
   - Serialize dates to ISO, optional dates/language to `null`, branded IDs to strings, and coverage/stale fields to the public contract.
   - Remove all host and Recently Shared fields.
-  - Test a populated and empty snapshot without JSON round-trip ambiguity.
   - Modify: `src/lib/http/serialize-directory-snapshot.ts`; create its test.
   - Commit: `feat(api): serialize directory snapshots`.
 
@@ -249,6 +249,7 @@ Out-of-scope discoveries go here and wait for a later plan: custom domain, edita
 | 2026-08-20 | S01 | Coverage modules deleted; `invalid-space-url` removed. Six commits instead of one. | refactor(mvp): remove public-post coverage |
 | 2026-08-20 | PLAN | Restored full plan (S03–S38, §5–8) after S01 run truncated the file. | docs: restore truncated daily MVP plan |
 | 2026-08-21 | S02 | Host identity removed; UserId gone; cards/UI/serialize/map/search comments aligned; typecheck/tests/lint/build green. | refactor(mvp): remove host identity from space cards |
+| 2026-08-22 | S03 | Deleted RecentlyShared + internal/refresh; snapshot/serializer/.env without recentlyShared/cron; typecheck/tests/lint/build green. | refactor(mvp): remove cron and recently shared surfaces |
 
 ## 8. Daily completion report template
 
