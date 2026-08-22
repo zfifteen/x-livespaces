@@ -7,7 +7,6 @@
  * 3. Missing snapshot → defined empty view with caller filters.
  * 4. Existing snapshot → apply filters to stored cards; preserve unfiltered
  *    liveCount and stored generatedAt.
- * 5. recentlySharedCards is empty / unused in MVP (no public-post harvest).
  */
 
 import { notImplementedYet } from "@/domain/result";

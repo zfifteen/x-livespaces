@@ -1,10 +1,10 @@
 /**
  * Typed view of process environment for LiveSpaces.
  *
- * Intended logic:
- * 1. Read `X_API_BEARER_TOKEN`. Empty or missing → `missing-bearer-token`.
- * 2. Read `CRON_SECRET` (may be empty in local dev; refresh route must fail closed if empty).
- * 3. Read `LIVE_DIRECTORY_POLL_INTERVAL_SECONDS`, default 45, clamp to 30–60 per CONCEPT §6.
+ * Intended logic (MVP, TECH_SPEC v1.3):
+ * 1. Read `X_API_BEARER_TOKEN`. Empty or missing → `missing-bearer-token`
+ *    (required only by refresh-side callers).
+ * 2. Read `REFRESH_COOLDOWN_SECONDS`, default 1800, require a positive integer.
  */
 
 import { notImplementedYet } from "@/domain/result";
@@ -13,8 +13,7 @@ import type { Result } from "@/domain/result";
 
 export type LiveSpacesEnvironment = {
   readonly xApiBearerToken: string;
-  readonly cronSecret: string;
-  readonly pollIntervalSeconds: number;
+  readonly refreshCooldownSeconds: number;
 };
 
 export function readLiveSpacesEnvironment(

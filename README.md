@@ -41,7 +41,7 @@ Requires Node.js 22+.
 
 1. Copy `.env.example` to `.env.local`.
 2. Set `X_API_BEARER_TOKEN` (app-only bearer for public X API v2 reads).
-3. Optionally set `CRON_SECRET` and `LIVE_DIRECTORY_POLL_INTERVAL_SECONDS` (default `45`, CONCEPT range 30–60).
+3. Optionally set `REFRESH_COOLDOWN_SECONDS` (default `1800`).
 4. Install and run:
 
 ```bash

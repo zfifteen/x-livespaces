@@ -1,7 +1,7 @@
 /**
- * Background / on-demand rebuild of the unfiltered live directory.
+ * On-demand rebuild of the unfiltered live directory.
  *
- * Called by the poll job and by `loadLiveDirectory` on cache miss.
+ * Called by POST /api/spaces/refresh under the global cooldown.
  *
  * Intended control flow (MVP, TECH_SPEC v1.3):
  * 1. Read env (bearer, cooldown).
@@ -13,7 +13,7 @@
  * 6. Count live cards for `liveCount`.
  * 7. Write snapshot with coverage official-search (or retain last-good on total failure).
  *    Load-time request filters are applied later in `loadLiveDirectory`.
- * No tweet / public-post harvest in MVP.
+ * No tweet / public-post harvest in MVP. No cron.
  */
 
 import { notImplementedYet } from "@/domain/result";
