@@ -1,11 +1,13 @@
 /**
- * Cache seam for the assembled directory.
+ * Cache seam for the assembled directory snapshot.
  *
- * CONCEPT §6: optional Redis. MVP uses an in-memory adapter. Redis implements
- * the same methods later without changing `loadLiveDirectory`.
+ * MVP: in-memory adapter for local `next dev`; Cloudflare KV adapter on
+ * Workers (`LIVE_DIRECTORY` binding, key `snapshot:v1`). Same interface so
+ * `loadLiveDirectory` and `refreshLiveDirectory` stay adapter-agnostic.
  *
- * Freshness: CONCEPT background jobs every 30–60 seconds. `isFresh` is true
- * when `now - generatedAt` is less than the poll interval.
+ * Freshness is decided by the caller via `snapshotIsFresh` and the global
+ * 1,800-second cooldown. The cache itself only stores and returns the last
+ * written unfiltered `DirectorySnapshot`.
  */
 
 import { notImplementedYet } from "@/domain/result";

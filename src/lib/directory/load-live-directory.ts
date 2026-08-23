@@ -2,11 +2,12 @@
  * Composition root for the directory page and GET /api/spaces.
  *
  * Intended control flow (MVP, TECH_SPEC v1.3):
- * 1. Parse / validate filters (caller may pass already-parsed filters).
+ * 1. Caller supplies already-parsed DirectoryFilters.
  * 2. Read cache once. Never call X or refresh from the read path.
- * 3. Missing snapshot → defined empty view with caller filters.
+ * 3. Missing snapshot → defined empty view with caller filters and
+ *    generatedAt = now (or leave undefined path explicit in UI).
  * 4. Existing snapshot → apply filters to stored cards; preserve unfiltered
- *    liveCount and stored generatedAt.
+ *    liveCount, stored generatedAt, and optional coverage.
  */
 
 import { notImplementedYet } from "@/domain/result";

@@ -2,6 +2,14 @@ import type { DirectoryFilters } from "@/domain/directory-filters";
 import type { LiveSpaceCard } from "@/domain/live-space-card";
 
 /**
+ * How the stored snapshot was produced.
+ *
+ * - official-search: last write came from a successful X fan-out.
+ * - cached-after-failure: X failed and the prior snapshot was retained.
+ */
+export type DirectoryCoverage = "official-search" | "cached-after-failure";
+
+/**
  * One consistent view of the directory at a refresh instant.
  *
  * `liveCount` is the number of cards with `lifecycleState === "live"` *before*
@@ -10,10 +18,12 @@ import type { LiveSpaceCard } from "@/domain/live-space-card";
  *
  * MVP stores the unfiltered card set in `visibleCards`. Request filters are
  * applied on read. Recently Shared is out of MVP (no public-post harvest).
+ * Optional `coverage` records whether the last write hit X or served last-good.
  */
 export type DirectorySnapshot = {
   readonly generatedAt: Date;
   readonly liveCount: number;
   readonly appliedFilters: DirectoryFilters;
   readonly visibleCards: readonly LiveSpaceCard[];
+  readonly coverage?: DirectoryCoverage;
 };

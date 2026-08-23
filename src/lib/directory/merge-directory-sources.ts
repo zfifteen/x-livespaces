@@ -1,13 +1,15 @@
 /**
- * Union official search hits with enriched public-link Spaces, keyed by SpaceId.
+ * Union official search result batches by SpaceId and rank them.
+ *
+ * MVP has one source only: official Spaces search. Public-post harvest is
+ * out of scope, so there is no second list to merge.
  *
  * Intended logic:
- * 1. Index official cards by spaceId.
- * 2. For each public-link card: if the id exists, clone the official card
- *    with `sourceKind: "merged"`; otherwise keep the public-link card.
- * 3. Append remaining official-only cards.
- * 4. Stable-sort: live first, then listenerCount descending, then startedAt
- *    ascending so new rooms stay visible.
+ * 1. Accept one or more official-search card batches.
+ * 2. Deduplicate by spaceId (first occurrence wins; later batches drop dupes).
+ * 3. Stable-sort: live first, then listenerCount descending, then startedAt
+ *    ascending so newer rooms stay visible; undefined dates sort last.
+ * 4. sourceKind remains official-api on every card.
  */
 
 import { notImplementedYet } from "@/domain/result";
@@ -16,8 +18,7 @@ import type { LiveSpacesError } from "@/domain/errors";
 import type { Result } from "@/domain/result";
 
 export type MergeDirectorySourcesInput = {
-  readonly officialCards: readonly LiveSpaceCard[];
-  readonly publicLinkCards: readonly LiveSpaceCard[];
+  readonly officialBatches: readonly (readonly LiveSpaceCard[])[];
 };
 
 export function mergeDirectorySources(

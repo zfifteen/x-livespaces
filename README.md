@@ -10,9 +10,9 @@ Product definition: [`CONCEPT.md`](./CONCEPT.md). MVP tech spec: [`docs/TECH_SPE
 
 - How many Spaces are live right now
 - Keyword search
-- Cards with title, listeners, timing, topics (if present), and a Join button
+- Cards with title, listeners, timing, and a Join button (no host identity)
 - Filters: live only, minimum listeners, language
-- Manual Refresh (30-minute global cooldown). No tweet/public-post harvest in MVP.
+- Manual Refresh (30-minute global cooldown). Official Spaces search only; no tweet/public-post harvest.
 
 ## Stack
 
@@ -21,7 +21,7 @@ Product definition: [`CONCEPT.md`](./CONCEPT.md). MVP tech spec: [`docs/TECH_SPE
 - In-memory cache seam locally; Cloudflare KV in production
 - Vitest, ESLint, Prettier
 
-Official Spaces search requires a keyword. Browse mode uses vowel fan-out `a e i o u`, union by Space id. No public-post harvest.
+Official Spaces search requires a keyword. Browse mode uses vowel fan-out `a e i o u`, union by Space id. No public-post harvest. No host expansions.
 
 ## Repository layout
 
@@ -65,4 +65,4 @@ Keep tokens in the environment. `.env*.local` stays out of git.
 
 ## Phase 3 start line
 
-Daily slices live in `docs/plans/2026-08-20-mvp-daily-implementation.md`. Milestone A removes public-post coverage, host identity, Recently Shared, and cron surfaces before pure domain work begins.
+Daily slices live in `docs/plans/2026-08-20-mvp-daily-implementation.md`. Milestone A removes public-post coverage, host identity, Recently Shared, and cron surfaces, then aligns remaining skeleton contracts before pure domain work begins.

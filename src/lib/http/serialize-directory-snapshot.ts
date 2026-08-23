@@ -2,9 +2,9 @@
  * JSON body for GET /api/spaces.
  *
  * Intended logic: Dates become ISO-8601 strings; branded ids become plain
- * strings; topic tags stay arrays. Keep field names aligned with
- * `DirectorySnapshot` so the UI can share types later via a generated client.
- * Host fields and recentlySharedCards are absent in MVP.
+ * strings; topic tags stay arrays; optional coverage and language/date nulls
+ * match the public contract. Host fields and recentlySharedCards are absent
+ * in MVP.
  */
 
 import { notImplementedYet } from "@/domain/result";
@@ -22,6 +22,8 @@ export type SerializedDirectorySnapshot = {
     readonly languageCode: string | null;
   };
   readonly visibleCards: readonly SerializedLiveSpaceCard[];
+  readonly coverage?: "official-search" | "cached-after-failure";
+  readonly stale?: boolean;
 };
 
 export type SerializedLiveSpaceCard = {
