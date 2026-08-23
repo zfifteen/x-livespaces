@@ -116,7 +116,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S04**
+**NEXT_SLICE: S05**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -147,7 +147,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Verify `/api/internal/refresh`, cron, polling, and Recently Shared have no code references.
   - Commit: `refactor(mvp): remove cron and recently shared surfaces`.
 
-- [ ] **S04 — Align remaining skeleton contracts with the approved architecture.**
+- [x] **S04 — Align remaining skeleton contracts with the approved architecture.**
   - Revise intended-logic comments in cache, refresh, load, X search, mapping, merge, README, and AGENTS.
   - Set `DEFAULT_LIVE_DIRECTORY_KEYWORDS` to exactly `a`, `e`, `i`, `o`, `u`.
   - Change mapping input to Space JSON only; remove included users/topics parameters.
@@ -250,6 +250,7 @@ Out-of-scope discoveries go here and wait for a later plan: custom domain, edita
 | 2026-08-20 | PLAN | Restored full plan (S03–S38, §5–8) after S01 run truncated the file. | docs: restore truncated daily MVP plan |
 | 2026-08-21 | S02 | Host identity removed; UserId gone; cards/UI/serialize/map/search comments aligned; typecheck/tests/lint/build green. | refactor(mvp): remove host identity from space cards |
 | 2026-08-22 | S03 | Deleted RecentlyShared + internal/refresh; snapshot/serializer/.env without recentlyShared/cron; typecheck/tests/lint/build green. | refactor(mvp): remove cron and recently shared surfaces |
+| 2026-08-23 | S04 | Skeleton contracts aligned: vowel keywords, coverage field, refresh result shape, merge batches, comments/README; typecheck/tests/lint/build green. | docs(mvp): align skeleton contracts with tech spec |
 
 ## 8. Daily completion report template
 
