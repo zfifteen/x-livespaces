@@ -6,11 +6,13 @@
  * silently wander in.
  */
 
-import { notImplementedYet } from "@/domain/result";
+import { err, ok } from "@/domain/result";
 import type { LiveSpacesError } from "@/domain/errors";
 import type { Result } from "@/domain/result";
 
 export type SpaceId = string & { readonly __brand: "SpaceId" };
+
+const SPACE_ID_PATTERN = /^[A-Za-z0-9]+$/;
 
 /**
  * Accept a raw Space id from the X API or a parsed `/i/spaces/{id}` URL.
@@ -24,6 +26,13 @@ export type SpaceId = string & { readonly __brand: "SpaceId" };
  * Failure: `invalid-space-id` with the original raw value in the error.
  */
 export function spaceIdFromString(rawValue: string): Result<SpaceId, LiveSpacesError> {
-  void rawValue;
-  return notImplementedYet("spaceIdFromString");
+  const trimmed = rawValue.trim();
+  if (trimmed.length === 0 || !SPACE_ID_PATTERN.test(trimmed)) {
+    return err({
+      kind: "invalid-space-id",
+      rawValue,
+      message: `Invalid Space id: ${JSON.stringify(rawValue)}`,
+    });
+  }
+  return ok(trimmed as SpaceId);
 }
