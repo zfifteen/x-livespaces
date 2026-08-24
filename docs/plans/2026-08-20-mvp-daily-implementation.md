@@ -116,7 +116,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S05**
+**NEXT_SLICE: S06**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -140,7 +140,6 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 - [x] **S03 — Remove Recently Shared and cron refresh surfaces.**
   - Delete: `src/components/directory/RecentlySharedSpaces.tsx`.
-  - Delete: `src/app/api/internal/refresh/route.ts`.
   - Modify: `src/components/directory/DirectoryPageShell.tsx`.
   - Modify: `src/domain/directory-snapshot.ts` and serializer contracts to remove `recentlySharedCards`.
   - Modify: `.env.example` to remove `CRON_SECRET` and polling variables; add `REFRESH_COOLDOWN_SECONDS=1800`.
@@ -158,7 +157,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 ### Milestone B — Pure domain and presentation functions
 
-- [ ] **S05 — Implement `spaceIdFromString`.**
+- [x] **S05 — Implement `spaceIdFromString`.**
   - Test: trims valid alphanumeric IDs; rejects empty, whitespace-only, punctuation, and malformed values; preserves original input in errors.
   - Modify: `src/domain/branded-ids.ts`; create `src/domain/branded-ids.test.ts`.
   - Use the narrowest validation compatible with observed official IDs and the spec.
@@ -251,6 +250,7 @@ Out-of-scope discoveries go here and wait for a later plan: custom domain, edita
 | 2026-08-21 | S02 | Host identity removed; UserId gone; cards/UI/serialize/map/search comments aligned; typecheck/tests/lint/build green. | refactor(mvp): remove host identity from space cards |
 | 2026-08-22 | S03 | Deleted RecentlyShared + internal/refresh; snapshot/serializer/.env without recentlyShared/cron; typecheck/tests/lint/build green. | refactor(mvp): remove cron and recently shared surfaces |
 | 2026-08-23 | S04 | Skeleton contracts aligned: vowel keywords, coverage field, refresh result shape, merge batches, comments/README; typecheck/tests/lint/build green. | docs(mvp): align skeleton contracts with tech spec |
+| 2026-08-24 | S05 | spaceIdFromString validates alphanumeric IDs after trim; rejects empty/whitespace/punctuation; preserves rawValue; typecheck/tests/lint/build green. | feat(domain): validate space identifiers |
 
 ## 8. Daily completion report template
 
