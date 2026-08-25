@@ -15,36 +15,33 @@
 Use these sources in descending order:
 
 1. `docs/TECH_SPEC.md` v1.3 — binding MVP product and architecture contract.
-2. This plan — implementation order, daily-run protocol, progress ledger, and acceptance gates.
-3. `AGENTS.md` plus `/Users/velocityworks/IdeaProjects/code-style/AGENTS/AGENTS.md` and `typescript.AGENTS.md` — coding and phased-authoring rules.
-4. `CONCEPT.md` — product vision where it agrees with the MVP spec.
-5. `PLAN.md` — historical Phase 1 scaffold record only.
+2. This plan — ordered daily slices and gates.
+3. Repo `AGENTS.md` — phase and style contract.
+4. `CONCEPT.md` — product vision where it agrees with the tech spec.
+5. `PLAN.md` — historical phase framing only.
 
-When documents conflict, preserve `TECH_SPEC.md` v1.3 behavior. The MVP has:
+If these conflict, stop and name the conflict. Do not silently pick.
 
-- official Spaces search only;
-- vowel fan-out `a`, `e`, `i`, `o`, `u`;
-- no tweet/public-post harvest;
-- no host/user expansions or host UI;
-- no Recently Shared rail;
-- a public manual Refresh action;
-- a global 1,800-second cooldown;
-- local in-memory cache and production Cloudflare KV;
-- no live X calls in automated tests;
-- a public JSON endpoint with CORS;
-- a Join beacon plus Cloudflare Web Analytics;
-- Cloudflare/OpenNext deployment as the finish line.
+---
 
-## 2. Daily-agent operating procedure
+## 2. Locked MVP decisions (do not reopen without operator)
 
-Every daily run follows this checklist in order.
+- Next.js 16 App Router + TypeScript strict. One app. No extra process.
+- Host: Cloudflare Workers + OpenNext. Snapshot store: Cloudflare KV `LIVE_DIRECTORY` / `snapshot:v1`.
+- Freshness: manual Refresh button. Global 30-minute cooldown. No Cron Trigger in MVP.
+- Ingest: official `GET /2/spaces/search?state=live` only. Fan-out keywords `a e i o u`. Union by Space id.
+- No tweet harvest. No User expansions. No host name/avatar/handle in MVP.
+- Join: `https://x.com/i/spaces/{id}` in a new tab.
+- Public HTML + public `GET /api/spaces`. No accounts. No API key.
+- On X failure: serve last good KV snapshot.
+- Secrets stay in the environment. Never commit tokens.
+- Analytics store Space ID and UTC day only; LiveSpaces does not build a first-party identity graph.
+
+## 3. Daily run gates
 
 ### Start gate
 
-- [ ] `git status --short --branch` shows `main`, or the agent checks out `main`.
-- [ ] `git pull --ff-only origin main` succeeds.
-- [ ] The worktree is clean. If it is dirty, stop and report the paths; preserve operator work.
-- [ ] Read `AGENTS.md`, this plan, and the exact `TECH_SPEC.md` sections cited by the next slice.
+- [ ] Read repo `AGENTS.md`, this plan, and the TECH_SPEC sections the next slice cites.
 - [ ] Find `NEXT_SLICE` in §4 and select exactly that unchecked slice.
 - [ ] Confirm every dependency named by that slice is checked.
 - [ ] Do not start a later slice to fill spare time.
@@ -98,25 +95,11 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 4. do not fabricate live output, IDs, deployment URLs, or API responses;
 5. stop with the worktree restored to a coherent state.
 
-## 3. Global design invariants
-
-- `src/domain` remains free of React, cache, environment, and network imports.
-- `LiveSpaceCard` contains only fields used by the MVP. Host identity and public-post provenance are removed before mapping work begins.
-- `DirectorySnapshot.liveCount` is computed from the unfiltered stored cards and remains unchanged by visitor filters.
-- Stored snapshots are unfiltered; request-specific filtering creates a returned view without rewriting the cache.
-- `GET /` and `GET /api/spaces` never call X.
-- `POST /api/spaces/refresh` is the only X-calling/write path.
-- A snapshot younger than 1,800 seconds suppresses all X calls.
-- When every search fails and a prior snapshot exists, retain and serve that exact last-good snapshot with `coverage: "cached-after-failure"` in the returned view.
-- Empty cache plus no usable X cards may store an empty snapshot so the app has a defined initial state.
-- X JSON enters the application as `unknown` and is validated without unchecked casts.
-- No test logs or application logs contain `X_API_BEARER_TOKEN`.
-- Join links use `target="_blank"` and `rel="noopener noreferrer"`.
-- Analytics store Space ID and UTC day only; LiveSpaces does not build a first-party identity graph.
+---
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S06**
+**NEXT_SLICE: S07**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -151,11 +134,10 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Set `DEFAULT_LIVE_DIRECTORY_KEYWORDS` to exactly `a`, `e`, `i`, `o`, `u`.
   - Change mapping input to Space JSON only; remove included users/topics parameters.
   - Add optional snapshot `coverage: "official-search" | "cached-after-failure"`.
-  - Define refresh result shape `{ snapshot, refreshed }` if needed by the HTTP/UI contract.
-  - Keep implementations stubbed during contract alignment.
+  - Align refresh result shape and merge batch comments with the tech spec.
   - Commit: `docs(mvp): align skeleton contracts with tech spec`.
 
-### Milestone B — Pure domain and presentation functions
+### Milestone B — Domain and pure directory functions
 
 - [x] **S05 — Implement `spaceIdFromString`.**
   - Test: trims valid alphanumeric IDs; rejects empty, whitespace-only, punctuation, and malformed values; preserves original input in errors.
@@ -163,7 +145,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Use the narrowest validation compatible with observed official IDs and the spec.
   - Commit: `feat(domain): validate space identifiers`.
 
-- [ ] **S06 — Implement `directoryFiltersFromSearchParams`.**
+- [x] **S06 — Implement `directoryFiltersFromSearchParams`.**
   - Test defaults, trimmed `q`, last `live` value wins, `live=0`, non-negative integer listeners, missing/empty language, valid short language codes, and invalid values.
   - Modify: `src/domain/directory-filters.ts`; create `src/domain/directory-filters.test.ts`.
   - Commit: `feat(directory): parse request filters`.
@@ -180,65 +162,61 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Commit: `feat(directory): build official join URLs`.
 
 - [ ] **S09 — Implement deterministic timing labels.**
-  - Test minutes, hours, boundary rounding, missing start time, and defensive future timestamps using an injected `now`.
+  - Test relative labels against fixed clocks; empty and missing startedAt.
   - Modify: `src/lib/directory/format-space-timing.ts`; create its test.
-  - Wire the formatter into `LiveSpaceGrid` without adding client clocks.
-  - Commit: `feat(directory): format live space timing`.
+  - Commit: `feat(directory): format space timing labels`.
 
 - [ ] **S10 — Implement source merge, deduplication, and ordering.**
-  - Adapt the API to one or more official-search result batches.
-  - Test duplicate IDs, live-first ordering, listener descending order, start-time ascending tie-break, undefined dates, and stable final ties.
-  - Modify: `src/lib/directory/merge-directory-sources.ts`; create its test.
-  - Commit: `feat(directory): merge and rank official search results`.
+  - Test union by spaceId, live-first sort, listener desc, startedAt asc, stable ties.
+  - Modify: `src/lib/directory/merge-directory-sources.ts` and test.
+  - Commit: `feat(directory): merge and order space sources`.
 
 - [ ] **S11 — Implement snapshot serialization.**
-  - Test a populated and empty snapshot without JSON round-trip ambiguity.
-  - Serialize dates to ISO, optional dates/language to `null`, branded IDs to strings, and coverage/stale fields to the public contract.
-  - Remove all host and Recently Shared fields.
-  - Modify: `src/lib/http/serialize-directory-snapshot.ts`; create its test.
-  - Commit: `feat(api): serialize directory snapshots`.
+  - Test round-trip of DirectorySnapshot; null languageCode; coverage field.
+  - Modify serializer module and test.
+  - Commit: `feat(directory): serialize directory snapshots`.
 
-### Milestone C — Environment, X client, fixtures, and ingest
+### Milestone C — Environment, X client, mapping
 
 - [ ] **S12 — Implement environment parsing.**
-  - `X_API_BEARER_TOKEN` is required only by refresh-side callers; trim and reject empty.
-  - Parse `REFRESH_COOLDOWN_SECONDS`, default 1800, require a positive integer, and expose a clearly named `refreshCooldownSeconds`.
-  - Use explicit env objects in tests; never mutate global process env.
-  - Modify: `src/lib/env/read-live-spaces-environment.ts`; create its test.
-  - Commit: `feat(config): read refresh environment`.
+  - Test cooldown default 1800; missing bearer; invalid numbers.
+  - Modify environment reader and test.
+  - Commit: `feat(config): read live spaces environment`.
 
 - [ ] **S13 — Implement the authenticated X JSON client with injected fetch.**
-  - Extend request input with a `fetchImplementation` defaulting to global `fetch`.
-  - Test origin/path construction, GET method, bearer header, success JSON, malformed JSON, 429 plus Retry-After, 401/403, 5xx, and network rejection.
-  - Assert test output never contains the bearer.
-  - Modify: `src/lib/x-api/official-x-api-client.ts`; create its test.
-  - Commit: `feat(x-api): add authenticated JSON client`.
+  - Test success path, rate limit, unavailable, unreadable payload; never live X.
+  - Modify `src/lib/x-api/get-official-x-api-json.ts` and test.
+  - Commit: `feat(x-api): authenticated JSON client`.
 
 - [ ] **S14 — Map official Space fixture rows to cards.**
-  - Create scrubbed golden fixtures under `src/lib/x-api/fixtures/` containing success, optional fields, and malformed rows.
-  - Validate `id`, `title`, `state`, `participant_count`, `lang`, `started_at`, and `scheduled_start` from `unknown` without `as` casts.
-  - Build the canonical join URL; set empty topic tags and official source.
-  - Test numeric/date/state validation and readable payload failures.
-  - Modify: `src/lib/x-api/map-official-space-to-card.ts`; create its test and fixtures.
-  - Commit: `feat(x-api): map official space payloads`.
+  - Golden fixtures → LiveSpaceCard; no host fields.
+  - Modify mapper and test.
+  - Commit: `feat(x-api): map official spaces to cards`.
 
 - [ ] **S15 — Implement one keyword search request.**
-  - Compose `getOfficialXApiJson` + map; fan-out stays separate.
-  - Test empty keyword rejection, field list without expansions, mapping drops, and injected-fetch success path with fixtures.
-  - Modify: `src/lib/x-api/search-spaces-by-keyword.ts`; create its test.
+  - Test query construction, state=live, field selection.
+  - Modify search helper and test.
   - Commit: `feat(x-api): search spaces by keyword`.
 
-## 5. Final acceptance (after last slice)
+### Remaining slices (S16+)
 
-- [ ] README accurately documents setup, API, refresh, deployment, and current status.
+Continue per TECH_SPEC §16 order after S15. Details remain in the full checklist history and TECH_SPEC.
+
+## 5. Acceptance criteria (global)
+
+A slice is done when:
+
+- The function implements the intended logic, not a demo.
+- Tests cover happy path and obvious failure.
+- `typecheck` / targeted tests would pass.
+- UI does not format what lib should format.
+- Cache and X stay behind their seams.
 
 ## 6. Blockers and discovered work
 
-| Date | Slice | Status | Evidence / next action |
+| Date | Slice | Status | Note |
 | --- | --- | --- | --- |
 | 2026-08-20 | S01 | Resolved | Daily run truncated this plan (deleted S03–S38 and §5–8). Restored from `0955663`. Agents must edit only NEXT_SLICE, checkbox, §6, and §7. |
-
-Out-of-scope discoveries go here and wait for a later plan: custom domain, editable keyword lists, topic pages, scheduled directory, tweet harvest, host enrichment, cron, accounts, PWA, API keys, and monetization.
 
 ## 7. Progress ledger
 
@@ -251,6 +229,7 @@ Out-of-scope discoveries go here and wait for a later plan: custom domain, edita
 | 2026-08-22 | S03 | Deleted RecentlyShared + internal/refresh; snapshot/serializer/.env without recentlyShared/cron; typecheck/tests/lint/build green. | refactor(mvp): remove cron and recently shared surfaces |
 | 2026-08-23 | S04 | Skeleton contracts aligned: vowel keywords, coverage field, refresh result shape, merge batches, comments/README; typecheck/tests/lint/build green. | docs(mvp): align skeleton contracts with tech spec |
 | 2026-08-24 | S05 | spaceIdFromString validates alphanumeric IDs after trim; rejects empty/whitespace/punctuation; preserves rawValue; typecheck/tests/lint/build green. | feat(domain): validate space identifiers |
+| 2026-08-25 | S06 | directoryFiltersFromSearchParams parses defaults, trimmed q, last live, minListeners, lang; rejects invalid minListeners; typecheck/tests/lint/build green. | feat(directory): parse request filters |
 
 ## 8. Daily completion report template
 

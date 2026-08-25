@@ -1,4 +1,4 @@
-import { notImplementedYet } from "@/domain/result";
+import { err, ok } from "@/domain/result";
 import type { LiveSpacesError } from "@/domain/errors";
 import type { Result } from "@/domain/result";
 
@@ -36,6 +36,40 @@ export const DEFAULT_DIRECTORY_FILTERS: DirectoryFilters = {
 export function directoryFiltersFromSearchParams(
   searchParams: URLSearchParams,
 ): Result<DirectoryFilters, LiveSpacesError> {
-  void searchParams;
-  return notImplementedYet("directoryFiltersFromSearchParams");
+  const rawQ = searchParams.get("q");
+  const keywordQuery = rawQ === null ? "" : rawQ.trim();
+
+  const liveValues = searchParams.getAll("live");
+  let liveOnly = true;
+  if (liveValues.length > 0) {
+    const lastLive = liveValues[liveValues.length - 1];
+    liveOnly = lastLive !== "0";
+  }
+
+  const rawMin = searchParams.get("minListeners");
+  let minimumListenerCount = 0;
+  if (rawMin !== null && rawMin.trim() !== "") {
+    const trimmedMin = rawMin.trim();
+    if (!/^\d+$/.test(trimmedMin)) {
+      return err({
+        kind: "invalid-filters",
+        message: `Invalid minListeners: ${JSON.stringify(rawMin)}`,
+      });
+    }
+    minimumListenerCount = Number(trimmedMin);
+  }
+
+  const rawLang = searchParams.get("lang");
+  let languageCode: string | undefined;
+  if (rawLang !== null) {
+    const trimmedLang = rawLang.trim();
+    languageCode = trimmedLang === "" ? undefined : trimmedLang;
+  }
+
+  return ok({
+    keywordQuery,
+    liveOnly,
+    minimumListenerCount,
+    languageCode,
+  });
 }
