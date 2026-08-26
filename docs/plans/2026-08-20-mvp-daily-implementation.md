@@ -99,7 +99,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S07**
+**NEXT_SLICE: S08**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -150,7 +150,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Modify: `src/domain/directory-filters.ts`; create `src/domain/directory-filters.test.ts`.
   - Commit: `feat(directory): parse request filters`.
 
-- [ ] **S07 — Implement `applyDirectoryFilters`.**
+- [x] **S07 — Implement `applyDirectoryFilters`.**
   - Test lifecycle, inclusive listener threshold, exact normalized language, case-insensitive title/topic search, combined filters, and stable input order.
   - Replace Phase 1 placeholder assertions with behavioral tests.
   - Modify: `src/lib/directory/apply-directory-filters.ts` and its test.
@@ -230,6 +230,7 @@ A slice is done when:
 | 2026-08-23 | S04 | Skeleton contracts aligned: vowel keywords, coverage field, refresh result shape, merge batches, comments/README; typecheck/tests/lint/build green. | docs(mvp): align skeleton contracts with tech spec |
 | 2026-08-24 | S05 | spaceIdFromString validates alphanumeric IDs after trim; rejects empty/whitespace/punctuation; preserves rawValue; typecheck/tests/lint/build green. | feat(domain): validate space identifiers |
 | 2026-08-25 | S06 | directoryFiltersFromSearchParams parses defaults, trimmed q, last live, minListeners, lang; rejects invalid minListeners; typecheck/tests/lint/build green. | feat(directory): parse request filters |
+| 2026-08-26 | S07 | applyDirectoryFilters: lifecycle, inclusive listeners, exact lang, case-insensitive title/topic, combined, stable order; typecheck/tests/lint/build green. | feat(directory): filter snapshot cards |
 
 ## 8. Daily completion report template
 
