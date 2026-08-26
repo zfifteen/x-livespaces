@@ -21,8 +21,31 @@ export function applyDirectoryFilters(
   cards: readonly LiveSpaceCard[],
   filters: DirectoryFilters,
 ): readonly LiveSpaceCard[] {
-  // Phase 1: empty list so callers typecheck. Phase 3 replaces this body.
-  void cards;
-  void filters;
-  return [];
+  const keyword = filters.keywordQuery.trim().toLowerCase();
+  const hasKeyword = keyword.length > 0;
+  const languageFilter = filters.languageCode;
+
+  return cards.filter((card) => {
+    if (filters.liveOnly && card.lifecycleState !== "live") {
+      return false;
+    }
+    if (card.listenerCount < filters.minimumListenerCount) {
+      return false;
+    }
+    if (languageFilter !== undefined) {
+      if (card.languageCode !== languageFilter) {
+        return false;
+      }
+    }
+    if (hasKeyword) {
+      const titleMatch = card.title.toLowerCase().includes(keyword);
+      const tagMatch = card.topicTags.some((tag) =>
+        tag.toLowerCase().includes(keyword),
+      );
+      if (!titleMatch && !tagMatch) {
+        return false;
+      }
+    }
+    return true;
+  });
 }
