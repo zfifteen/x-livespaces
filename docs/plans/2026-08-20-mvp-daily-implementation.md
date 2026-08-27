@@ -99,7 +99,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S08**
+**NEXT_SLICE: S09**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -114,7 +114,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 - [x] **S02 — Remove host identity from the MVP domain and cards.**
   - Delete: `src/domain/host-identity.ts`.
-  - Modify: `src/domain/branded-ids.ts` to remove `UserId` and `userIdFromString`.
+  - Delete: `src/domain/branded-ids.ts` to remove `UserId` and `userIdFromString`.
   - Modify: `src/domain/live-space-card.ts` to remove `host`; narrow `DirectorySourceKind` to `"official-api"` or remove the field if no branching remains.
   - Modify: `src/components/directory/LiveSpaceCardView.tsx` to remove avatar/name/handle markup.
   - Modify filters and fixtures so keyword search covers title and topic tags only.
@@ -156,7 +156,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Modify: `src/lib/directory/apply-directory-filters.ts` and its test.
   - Commit: `feat(directory): filter snapshot cards`.
 
-- [ ] **S08 — Implement Join URL creation.**
+- [x] **S08 — Implement Join URL creation.**
   - Test exact absolute URL and absence of extra query parameters.
   - Modify: `src/lib/directory/build-join-url.ts`; create its test.
   - Commit: `feat(directory): build official join URLs`.
@@ -231,6 +231,7 @@ A slice is done when:
 | 2026-08-24 | S05 | spaceIdFromString validates alphanumeric IDs after trim; rejects empty/whitespace/punctuation; preserves rawValue; typecheck/tests/lint/build green. | feat(domain): validate space identifiers |
 | 2026-08-25 | S06 | directoryFiltersFromSearchParams parses defaults, trimmed q, last live, minListeners, lang; rejects invalid minListeners; typecheck/tests/lint/build green. | feat(directory): parse request filters |
 | 2026-08-26 | S07 | applyDirectoryFilters: lifecycle, inclusive listeners, exact lang, case-insensitive title/topic, combined, stable order; typecheck/tests/lint/build green. | feat(directory): filter snapshot cards |
+| 2026-08-27 | S08 | buildJoinUrl returns exact https://x.com/i/spaces/{id} with no query params; typecheck/tests/lint/build green. | feat(directory): build official join URLs |
 
 ## 8. Daily completion report template
 
