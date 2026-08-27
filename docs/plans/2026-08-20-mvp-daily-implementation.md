@@ -114,7 +114,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 - [x] **S02 — Remove host identity from the MVP domain and cards.**
   - Delete: `src/domain/host-identity.ts`.
-  - Delete: `src/domain/branded-ids.ts` to remove `UserId` and `userIdFromString`.
+  - Modify: `src/domain/branded-ids.ts` to remove `UserId` and `userIdFromString`.
   - Modify: `src/domain/live-space-card.ts` to remove `host`; narrow `DirectorySourceKind` to `"official-api"` or remove the field if no branching remains.
   - Modify: `src/components/directory/LiveSpaceCardView.tsx` to remove avatar/name/handle markup.
   - Modify filters and fixtures so keyword search covers title and topic tags only.
