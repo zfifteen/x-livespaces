@@ -99,7 +99,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S09**
+**NEXT_SLICE: S10**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -161,7 +161,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Modify: `src/lib/directory/build-join-url.ts`; create its test.
   - Commit: `feat(directory): build official join URLs`.
 
-- [ ] **S09 — Implement deterministic timing labels.**
+- [x] **S09 — Implement deterministic timing labels.**
   - Test relative labels against fixed clocks; empty and missing startedAt.
   - Modify: `src/lib/directory/format-space-timing.ts`; create its test.
   - Commit: `feat(directory): format space timing labels`.
@@ -224,7 +224,7 @@ A slice is done when:
 | --- | --- | --- | --- |
 | 2026-08-20 | PLAN | Plan authored from TECH_SPEC v1.3 and operator decisions; implementation has not started. | Pending plan commit |
 | 2026-08-20 | S01 | Coverage modules deleted; `invalid-space-url` removed. Six commits instead of one. | refactor(mvp): remove public-post coverage |
-| 2026-08-20 | PLAN | Restored full plan (S03–S38, §5–8) after S01 run truncated the file. | docs: restore truncated daily MVP plan |
+| 2026-08-20 | PLAN | Restored full plan (S03–S38 and §5–8) after S01 run truncated the file. | docs: restore truncated daily MVP plan |
 | 2026-08-21 | S02 | Host identity removed; UserId gone; cards/UI/serialize/map/search comments aligned; typecheck/tests/lint/build green. | refactor(mvp): remove host identity from space cards |
 | 2026-08-22 | S03 | Deleted RecentlyShared + internal/refresh; snapshot/serializer/.env without recentlyShared/cron; typecheck/tests/lint/build green. | refactor(mvp): remove cron and recently shared surfaces |
 | 2026-08-23 | S04 | Skeleton contracts aligned: vowel keywords, coverage field, refresh result shape, merge batches, comments/README; typecheck/tests/lint/build green. | docs(mvp): align skeleton contracts with tech spec |
@@ -232,6 +232,7 @@ A slice is done when:
 | 2026-08-25 | S06 | directoryFiltersFromSearchParams parses defaults, trimmed q, last live, minListeners, lang; rejects invalid minListeners; typecheck/tests/lint/build green. | feat(directory): parse request filters |
 | 2026-08-26 | S07 | applyDirectoryFilters: lifecycle, inclusive listeners, exact lang, case-insensitive title/topic, combined, stable order; typecheck/tests/lint/build green. | feat(directory): filter snapshot cards |
 | 2026-08-27 | S08 | buildJoinUrl returns exact https://x.com/i/spaces/{id} with no query params; typecheck/tests/lint/build green. | feat(directory): build official join URLs |
+| 2026-08-28 | S09 | formatSpaceTiming: relative minutes/hours, just now, scheduled starts, unavailable; typecheck/tests/lint/build green. | feat(directory): format space timing labels |
 
 ## 8. Daily completion report template
 
