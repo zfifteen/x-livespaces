@@ -43,63 +43,56 @@ If these conflict, stop and name the conflict. Do not silently pick.
 
 - [ ] Read repo `AGENTS.md`, this plan, and the TECH_SPEC sections the next slice cites.
 - [ ] Find `NEXT_SLICE` in §4 and select exactly that unchecked slice.
-- [ ] Confirm every dependency named by that slice is checked.
-- [ ] Do not start a later slice to fill spare time.
+- [ ] Confirm every named dependency slice is checked.
+- [ ] If `NEXT_SLICE` is COMPLETE, or every slice is checked: report done, do not invent work, stop.
+- [ ] Do not start a later slice to fill time.
 
-### Authoring and TDD gate
+### Operator / credential gates (do not bypass)
 
-- [ ] Phase 1: add or revise signatures and rich intended-logic comments only when the slice changes a contract.
-- [ ] Phase 2: review that skeleton against the spec before writing behavior.
-- [ ] RED: add one focused behavior test and run the narrow test; record an expected behavioral failure.
-- [ ] GREEN: implement the minimum behavior required by that test.
-- [ ] Run the narrow test and the full suite.
-- [ ] Repeat RED→GREEN vertically for each behavior included in the slice; never write a batch of tests ahead of all implementation.
-- [ ] REFACTOR only while all tests remain green.
-- [ ] Use injected `fetch`, golden JSON fixtures, fake KV, and deterministic clocks. Never call live X in Vitest or CI.
+- S36: live X smoke only if `X_API_BEARER_TOKEN` is already available in an approved env/secret store. Never print it. If missing, block.
+- S37–S38: require operator-approved Cloudflare account/zone/resource choices and a real deploy. If those are not in the conversation or repo as non-secret facts, block.
+- Never fabricate deployment URLs, namespace IDs, API responses, or live card counts.
 
-### Quality gate
+### Authoring
 
-Run, in order:
+- Follow the plan’s TDD gate: one focused failing test, minimum green implementation, then refactor only while green.
+- Milestone A (S01–S04) is deletion/contract alignment. Do not reintroduce harvest, host identity, Recently Shared, or cron.
+- Domain stays free of React, cache, env, and network.
+- No live X in tests or CI. Inject fetch, fixtures, fake KV, deterministic clocks.
+- Type-strict. No `any`. No fake directory data as production behavior.
+- Keep scope to the slice. New work goes in plan §6, not opportunistic code.
 
-```bash
-npm run typecheck
-npm test
-npm run lint
-npm run build
-```
+### Quality
 
-- [ ] All four commands exit 0 with no new warnings.
-- [ ] Review the diff with `git diff --check` and `git diff`.
-- [ ] Verify the slice acceptance criteria and the relevant global code-review checklist.
-- [ ] Keep scope confined to the slice. Record newly discovered work under §6 instead of implementing it opportunistically.
+- Run the repo’s typecheck, tests, lint, and build when the environment can. If a command cannot run, say so and do not claim it passed.
+- Review the diff. Stage only slice files, the plan, and directly required docs.
 
-### Progress, commit, and push gate
+### Ship (non-negotiable)
 
-- [ ] Change this slice checkbox from `[ ]` to `[x]`.
-- [ ] Move `NEXT_SLICE` to the next unchecked slice.
-- [ ] Add one Progress Ledger row with date, slice, verification summary, and commit subject.
-- [ ] Stage only the slice files, this plan, and directly required documentation.
-- [ ] Commit once using the subject specified by the slice.
-- [ ] `git push origin main` succeeds without force.
-- [ ] Verify `git status --short --branch` is clean and up to date.
-- [ ] Stop. The next daily run owns the next slice.
-- **Do not rewrite this plan.** Change only `NEXT_SLICE`, the completed slice checkbox, §6, and §7. Never truncate or replace the file.
+- Work only on `refs/heads/main`. Do not create a feature branch. Do not open a PR.
+- Commit the slice once, on main, using the slice’s specified subject.
+- Push that commit to `origin/main` without force.
+- If push is rejected, the run failed. Do not leave work only in this chat or on another branch. Report the exact rejection. Do not force-push.
 
-### Blocked-run rule
+### Verify
 
-If a prerequisite, credential, provider UI, Cloudflare account decision, or live service prevents completion:
+- Read the plan and the changed files from GitHub at `refs/heads/main` (not a stale SHA).
+- Confirm the new commit SHA exists on `origin/main` and the plan shows this slice `[x]` with `NEXT_SLICE` advanced.
+- If GitHub main does not show that commit, do not claim success.
 
-1. keep production behavior uncommitted unless the slice is independently complete;
-2. add a concise entry to §6 with the exact blocker and evidence;
-3. leave `NEXT_SLICE` unchanged;
-4. do not fabricate live output, IDs, deployment URLs, or API responses;
-5. stop with the worktree restored to a coherent state.
+### If blocked
+
+- Do not leave half-implemented production behavior on main.
+- Record the blocker in plan §6 with non-secret evidence.
+- Leave `NEXT_SLICE` unchanged.
+- Restore a coherent worktree.
+- Stop.
 
 ---
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S10**
+**NEXT_SLICE: S11**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -139,25 +132,23 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
 
 ### Milestone B — Domain and pure directory functions
 
-- [x] **S05 — Implement `spaceIdFromString`.**
-  - Test: trims valid alphanumeric IDs; rejects empty, whitespace-only, punctuation, and malformed values; preserves original input in errors.
-  - Modify: `src/domain/branded-ids.ts`; create `src/domain/branded-ids.test.ts`.
-  - Use the narrowest validation compatible with observed official IDs and the spec.
+- [x] **S05 — Implement space identifier validation.**
+  - Test alphanumeric IDs after trim; reject empty/whitespace/punctuation; preserve rawValue.
+  - Modify: `src/domain/branded-ids.ts` and test.
   - Commit: `feat(domain): validate space identifiers`.
 
-- [x] **S06 — Implement `directoryFiltersFromSearchParams`.**
-  - Test defaults, trimmed `q`, last `live` value wins, `live=0`, non-negative integer listeners, missing/empty language, valid short language codes, and invalid values.
-  - Modify: `src/domain/directory-filters.ts`; create `src/domain/directory-filters.test.ts`.
+- [x] **S06 — Implement request filter parsing.**
+  - Test defaults, trimmed q, last live, minListeners, lang; reject invalid minListeners.
+  - Modify: directory filters parser and test.
   - Commit: `feat(directory): parse request filters`.
 
-- [x] **S07 — Implement `applyDirectoryFilters`.**
-  - Test lifecycle, inclusive listener threshold, exact normalized language, case-insensitive title/topic search, combined filters, and stable input order.
-  - Replace Phase 1 placeholder assertions with behavioral tests.
-  - Modify: `src/lib/directory/apply-directory-filters.ts` and its test.
+- [x] **S07 — Implement snapshot card filtering.**
+  - Test lifecycle, inclusive listeners, exact lang, case-insensitive title/topic, combined, stable order.
+  - Modify: `src/lib/directory/apply-directory-filters.ts` and test.
   - Commit: `feat(directory): filter snapshot cards`.
 
-- [x] **S08 — Implement Join URL creation.**
-  - Test exact absolute URL and absence of extra query parameters.
+- [x] **S08 — Implement official join URLs.**
+  - Test exact `https://x.com/i/spaces/{id}` with no query params.
   - Modify: `src/lib/directory/build-join-url.ts`; create its test.
   - Commit: `feat(directory): build official join URLs`.
 
@@ -166,7 +157,7 @@ If a prerequisite, credential, provider UI, Cloudflare account decision, or live
   - Modify: `src/lib/directory/format-space-timing.ts`; create its test.
   - Commit: `feat(directory): format space timing labels`.
 
-- [ ] **S10 — Implement source merge, deduplication, and ordering.**
+- [x] **S10 — Implement source merge, deduplication, and ordering.**
   - Test union by spaceId, live-first sort, listener desc, startedAt asc, stable ties.
   - Modify: `src/lib/directory/merge-directory-sources.ts` and test.
   - Commit: `feat(directory): merge and order space sources`.
@@ -233,6 +224,7 @@ A slice is done when:
 | 2026-08-26 | S07 | applyDirectoryFilters: lifecycle, inclusive listeners, exact lang, case-insensitive title/topic, combined, stable order; typecheck/tests/lint/build green. | feat(directory): filter snapshot cards |
 | 2026-08-27 | S08 | buildJoinUrl returns exact https://x.com/i/spaces/{id} with no query params; typecheck/tests/lint/build green. | feat(directory): build official join URLs |
 | 2026-08-28 | S09 | formatSpaceTiming: relative minutes/hours, just now, scheduled starts, unavailable; typecheck/tests/lint/build green. | feat(directory): format space timing labels |
+| 2026-08-29 | S10 | mergeDirectorySources: union by spaceId first-wins, live-first, listener desc, startedAt asc, stable ties; typecheck/tests/lint/build green. | feat(directory): merge and order space sources |
 
 ## 8. Daily completion report template
 
