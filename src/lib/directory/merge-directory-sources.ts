@@ -12,8 +12,8 @@
  * 4. sourceKind remains official-api on every card.
  */
 
-import { notImplementedYet } from "@/domain/result";
-import type { LiveSpaceCard } from "@/domain/live-space-card";
+import { ok } from "@/domain/result";
+import type { LiveSpaceCard, SpaceLifecycleState } from "@/domain/live-space-card";
 import type { LiveSpacesError } from "@/domain/errors";
 import type { Result } from "@/domain/result";
 
@@ -21,9 +21,56 @@ export type MergeDirectorySourcesInput = {
   readonly officialBatches: readonly (readonly LiveSpaceCard[])[];
 };
 
+const LIFECYCLE_RANK: Record<SpaceLifecycleState, number> = {
+  live: 0,
+  scheduled: 1,
+  ended: 2,
+};
+
+function compareCards(a: LiveSpaceCard, b: LiveSpaceCard): number {
+  const lifeDiff = LIFECYCLE_RANK[a.lifecycleState] - LIFECYCLE_RANK[b.lifecycleState];
+  if (lifeDiff !== 0) {
+    return lifeDiff;
+  }
+
+  const listenerDiff = b.listenerCount - a.listenerCount;
+  if (listenerDiff !== 0) {
+    return listenerDiff;
+  }
+
+  const aStart = a.startedAt?.getTime();
+  const bStart = b.startedAt?.getTime();
+  if (aStart === undefined && bStart === undefined) {
+    return 0;
+  }
+  if (aStart === undefined) {
+    return 1;
+  }
+  if (bStart === undefined) {
+    return -1;
+  }
+  return aStart - bStart;
+}
+
 export function mergeDirectorySources(
   input: MergeDirectorySourcesInput,
 ): Result<readonly LiveSpaceCard[], LiveSpacesError> {
-  void input;
-  return notImplementedYet("mergeDirectorySources");
+  const seen = new Set<string>();
+  const unique: LiveSpaceCard[] = [];
+
+  for (const batch of input.officialBatches) {
+    for (const card of batch) {
+      const id = card.spaceId;
+      if (seen.has(id)) {
+        continue;
+      }
+      seen.add(id);
+      unique.push(card);
+    }
+  }
+
+  // Stable sort: Array.prototype.sort is stable in modern JS engines.
+  unique.sort(compareCards);
+
+  return ok(unique);
 }
