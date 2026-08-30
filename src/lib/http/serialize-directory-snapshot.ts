@@ -7,8 +7,9 @@
  * in MVP.
  */
 
-import { notImplementedYet } from "@/domain/result";
+import { ok } from "@/domain/result";
 import type { DirectorySnapshot } from "@/domain/directory-snapshot";
+import type { LiveSpaceCard } from "@/domain/live-space-card";
 import type { LiveSpacesError } from "@/domain/errors";
 import type { Result } from "@/domain/result";
 
@@ -39,9 +40,44 @@ export type SerializedLiveSpaceCard = {
   readonly sourceKind: "official-api";
 };
 
+function serializeCard(card: LiveSpaceCard): SerializedLiveSpaceCard {
+  return {
+    spaceId: card.spaceId,
+    title: card.title,
+    listenerCount: card.listenerCount,
+    topicTags: card.topicTags,
+    languageCode: card.languageCode ?? null,
+    lifecycleState: card.lifecycleState,
+    startedAt: card.startedAt ? card.startedAt.toISOString() : null,
+    scheduledStart: card.scheduledStart
+      ? card.scheduledStart.toISOString()
+      : null,
+    joinUrl: card.joinUrl,
+    sourceKind: card.sourceKind,
+  };
+}
+
 export function serializeDirectorySnapshot(
   snapshot: DirectorySnapshot,
 ): Result<SerializedDirectorySnapshot, LiveSpacesError> {
-  void snapshot;
-  return notImplementedYet("serializeDirectorySnapshot");
+  const body: SerializedDirectorySnapshot = {
+    generatedAt: snapshot.generatedAt.toISOString(),
+    liveCount: snapshot.liveCount,
+    appliedFilters: {
+      keywordQuery: snapshot.appliedFilters.keywordQuery,
+      liveOnly: snapshot.appliedFilters.liveOnly,
+      minimumListenerCount: snapshot.appliedFilters.minimumListenerCount,
+      languageCode: snapshot.appliedFilters.languageCode ?? null,
+    },
+    visibleCards: snapshot.visibleCards.map(serializeCard),
+  };
+
+  if (snapshot.coverage !== undefined) {
+    return ok({
+      ...body,
+      coverage: snapshot.coverage,
+    });
+  }
+
+  return ok(body);
 }
