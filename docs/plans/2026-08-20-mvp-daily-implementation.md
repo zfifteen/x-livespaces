@@ -92,7 +92,7 @@ If these conflict, stop and name the conflict. Do not silently pick.
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S11**
+**NEXT_SLICE: S12**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -162,7 +162,7 @@ If these conflict, stop and name the conflict. Do not silently pick.
   - Modify: `src/lib/directory/merge-directory-sources.ts` and test.
   - Commit: `feat(directory): merge and order space sources`.
 
-- [ ] **S11 — Implement snapshot serialization.**
+- [x] **S11 — Implement snapshot serialization.**
   - Test round-trip of DirectorySnapshot; null languageCode; coverage field.
   - Modify serializer module and test.
   - Commit: `feat(directory): serialize directory snapshots`.
@@ -225,6 +225,7 @@ A slice is done when:
 | 2026-08-27 | S08 | buildJoinUrl returns exact https://x.com/i/spaces/{id} with no query params; typecheck/tests/lint/build green. | feat(directory): build official join URLs |
 | 2026-08-28 | S09 | formatSpaceTiming: relative minutes/hours, just now, scheduled starts, unavailable; typecheck/tests/lint/build green. | feat(directory): format space timing labels |
 | 2026-08-29 | S10 | mergeDirectorySources: union by spaceId first-wins, live-first, listener desc, startedAt asc, stable ties; typecheck/tests/lint/build green. | feat(directory): merge and order space sources |
+| 2026-08-30 | S11 | serializeDirectorySnapshot: ISO dates, null language/dates, optional coverage; round-trip tests; typecheck/tests/lint/build green. | feat(directory): serialize directory snapshots |
 
 ## 8. Daily completion report template
 
