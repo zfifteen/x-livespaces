@@ -92,7 +92,7 @@ If these conflict, stop and name the conflict. Do not silently pick.
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S13**
+**NEXT_SLICE: S14**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -114,59 +114,6 @@ If these conflict, stop and name the conflict. Do not silently pick.
   - Verify no X user expansions are represented by the domain contract.
   - Commit: `refactor(mvp): remove host identity from space cards`.
 
-- [x] **S03 — Remove Recently Shared and cron refresh surfaces.**
-  - Delete: `src/components/directory/RecentlySharedSpaces.tsx`.
-  - Modify: `src/components/directory/DirectoryPageShell.tsx`.
-  - Modify: `src/domain/directory-snapshot.ts` and serializer contracts to remove `recentlySharedCards`.
-  - Modify: `.env.example` to remove `CRON_SECRET` and polling variables; add `REFRESH_COOLDOWN_SECONDS=1800`.
-  - Verify `/api/internal/refresh`, cron, polling, and Recently Shared have no code references.
-  - Commit: `refactor(mvp): remove cron and recently shared surfaces`.
-
-- [x] **S04 — Align remaining skeleton contracts with the approved architecture.**
-  - Revise intended-logic comments in cache, refresh, load, X search, mapping, merge, README, and AGENTS.
-  - Set `DEFAULT_LIVE_DIRECTORY_KEYWORDS` to exactly `a`, `e`, `i`, `o`, `u`.
-  - Change mapping input to Space JSON only; remove included users/topics parameters.
-  - Add optional snapshot `coverage: "official-search" | "cached-after-failure"`.
-  - Align refresh result shape and merge batch comments with the tech spec.
-  - Commit: `docs(mvp): align skeleton contracts with tech spec`.
-
-### Milestone B — Domain and pure directory functions
-
-- [x] **S05 — Implement space identifier validation.**
-  - Test alphanumeric IDs after trim; reject empty/whitespace/punctuation; preserve rawValue.
-  - Modify: `src/domain/branded-ids.ts` and test.
-  - Commit: `feat(domain): validate space identifiers`.
-
-- [x] **S06 — Implement request filter parsing.**
-  - Test defaults, trimmed q, last live, minListeners, lang; reject invalid minListeners.
-  - Modify: directory filters parser and test.
-  - Commit: `feat(directory): parse request filters`.
-
-- [x] **S07 — Implement snapshot card filtering.**
-  - Test lifecycle, inclusive listeners, exact lang, case-insensitive title/topic, combined, stable order.
-  - Modify: `src/lib/directory/apply-directory-filters.ts` and test.
-  - Commit: `feat(directory): filter snapshot cards`.
-
-- [x] **S08 — Implement official join URLs.**
-  - Test exact `https://x.com/i/spaces/{id}` with no query params.
-  - Modify: `src/lib/directory/build-join-url.ts`; create its test.
-  - Commit: `feat(directory): build official join URLs`.
-
-- [x] **S09 — Implement deterministic timing labels.**
-  - Test relative labels against fixed clocks; empty and missing startedAt.
-  - Modify: `src/lib/directory/format-space-timing.ts`; create its test.
-  - Commit: `feat(directory): format space timing labels`.
-
-- [x] **S10 — Implement source merge, deduplication, and ordering.**
-  - Test union by spaceId, live-first sort, listener desc, startedAt asc, stable ties.
-  - Modify: `src/lib/directory/merge-directory-sources.ts` and test.
-  - Commit: `feat(directory): merge and order space sources`.
-
-- [x] **S11 — Implement snapshot serialization.**
-  - Test round-trip of DirectorySnapshot; null languageCode; coverage field.
-  - Modify serializer module and test.
-  - Commit: `feat(directory): serialize directory snapshots`.
-
 ### Milestone C — Environment, X client, mapping
 
 - [x] **S12 — Implement environment parsing.**
@@ -174,7 +121,7 @@ If these conflict, stop and name the conflict. Do not silently pick.
   - Modify environment reader and test.
   - Commit: `feat(config): read live spaces environment`.
 
-- [ ] **S13 — Implement the authenticated X JSON client with injected fetch.**
+- [x] **S13 — Implement the authenticated X JSON client with injected fetch.**
   - Test success path, rate limit, unavailable, unreadable payload; never live X.
   - Modify `src/lib/x-api/get-official-x-api-json.ts` and test.
   - Commit: `feat(x-api): authenticated JSON client`.
@@ -219,7 +166,7 @@ A slice is done when:
 | 2026-08-21 | S02 | Host identity removed; UserId gone; cards/UI/serialize/map/search comments aligned; typecheck/tests/lint/build green. | refactor(mvp): remove host identity from space cards |
 | 2026-08-22 | S03 | Deleted RecentlyShared + internal/refresh; snapshot/serializer/.env without recentlyShared/cron; typecheck/tests/lint/build green. | refactor(mvp): remove cron and recently shared surfaces |
 | 2026-08-23 | S04 | Skeleton contracts aligned: vowel keywords, coverage field, refresh result shape, merge batches, comments/README; typecheck/tests/lint/build green. | docs(mvp): align skeleton contracts with tech spec |
-| 2026-08-24 | S05 | spaceIdFromString validates alphanumeric IDs after trim; rejects empty/whitespace/punctuation; preserve rawValue; typecheck/tests/lint/build green. | feat(domain): validate space identifiers |
+| 2026-08-24 | S05 | spaceIdFromString validates alphanumeric IDs after trim; rejects empty/whitespace/punctuation; preserves rawValue; typecheck/tests/lint/build green. | feat(domain): validate space identifiers |
 | 2026-08-25 | S06 | directoryFiltersFromSearchParams parses defaults, trimmed q, last live, minListeners, lang; rejects invalid minListeners; typecheck/tests/lint/build green. | feat(directory): parse request filters |
 | 2026-08-26 | S07 | applyDirectoryFilters: lifecycle, inclusive listeners, exact lang, case-insensitive title/topic, combined, stable order; typecheck/tests/lint/build green. | feat(directory): filter snapshot cards |
 | 2026-08-27 | S08 | buildJoinUrl returns exact https://x.com/i/spaces/{id} with no query params; typecheck/tests/lint/build green. | feat(directory): build official join URLs |
@@ -227,6 +174,7 @@ A slice is done when:
 | 2026-08-29 | S10 | mergeDirectorySources: union by spaceId first-wins, live-first, listener desc, startedAt asc, stable ties; typecheck/tests/lint/build green. | feat(directory): merge and order space sources |
 | 2026-08-30 | S11 | serializeDirectorySnapshot: ISO dates, null language/dates, optional coverage; round-trip tests; typecheck/tests/lint/build green. | feat(directory): serialize directory snapshots |
 | 2026-08-31 | S12 | readLiveSpacesEnvironment: bearer required, cooldown default 1800, positive integer validation; typecheck/tests/lint green. | feat(config): read live spaces environment |
+| 2026-08-31 | S13 | getOfficialXApiJson: injected fetch, bearer guard, 429+Retry-After, 401/403/5xx, JSON parse failure, network fail; typecheck/tests green. | feat(x-api): authenticated JSON client |
 
 ## 8. Daily completion report template
 
