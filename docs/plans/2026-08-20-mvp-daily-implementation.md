@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S15**
+**NEXT_SLICE: S16**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -84,7 +84,7 @@
   - Modify mapper and test.
   - Commit: `feat(x-api): map official spaces to cards`.
 
-- [ ] **S15 — Implement one keyword search request.**
+- [x] **S15 — Implement one keyword search request.**
   - Test query construction, state=live, field selection.
   - Modify search helper and test.
   - Commit: `feat(x-api): search spaces by keyword`.
@@ -127,6 +127,7 @@ A slice is done when:
 | 2026-08-31 | S12 | readLiveSpacesEnvironment: bearer required, cooldown default 1800, positive integer validation; typecheck/tests/lint green. | feat(config): read live spaces environment |
 | 2026-08-31 | S13 | getOfficialXApiJson: injected fetch, bearer guard, 429+Retry-After, 401/403/5xx, JSON parse failure, network fail; typecheck/tests green. | feat(x-api): authenticated JSON client |
 | 2026-09-01 | S14 | mapOfficialSpaceToCard: golden fixtures → LiveSpaceCard, no host; id/title/state/participant_count required; optional lang/timestamps; x-api-payload-unreadable on bad rows; typecheck/tests/lint/build green. | feat(x-api): map official spaces to cards |
+| 2026-09-02 | S15 | searchSpacesByKeyword: query construction state=live space.fields, empty keyword reject, map+drop bad rows, empty data ok, rate-limit/bearer propagation; typecheck/tests green. | feat(x-api): search spaces by keyword |
 
 ## 8. Daily completion report template
 
