@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S17**
+**NEXT_SLICE: S18**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -94,9 +94,16 @@
   - Modify `lookup-spaces-by-id` helper and test.
   - Commit: `feat(x-api): lookup spaces by id`.
 
-### Remaining slices (S17+)
+### Milestone D — Fan-out and composition
 
-Continue per TECH_SPEC §16 order after S16. Next: `fanOutLiveSpaceKeywords` (merge already landed as S10). Details remain in the full checklist history and TECH_SPEC.
+- [x] **S17 — Implement live keyword fan-out.**
+  - DEFAULT vowels a e i o u; prepend extras; case-insensitive dedupe; trim blanks.
+  - Modify `fan-out-live-space-keywords` and test.
+  - Commit: `feat(x-api): fan-out live space keywords`.
+
+### Remaining slices (S18+)
+
+Continue per TECH_SPEC §16 order after S17. Next: KV adapter + `refreshLiveDirectory` + `loadLiveDirectory`. Details remain in the full checklist history and TECH_SPEC.
 
 ## 5. Acceptance criteria (global)
 
@@ -134,6 +141,7 @@ A slice is done when:
 | 2026-09-01 | S14 | mapOfficialSpaceToCard: golden fixtures → LiveSpaceCard, no host; id/title/state/participant_count required; optional lang/timestamps; x-api-payload-unreadable on bad rows; typecheck/tests/lint/build green. | feat(x-api): map official spaces to cards |
 | 2026-09-02 | S15 | searchSpacesByKeyword: query construction state=live space.fields, empty keyword reject, map+drop bad rows, empty data ok, rate-limit/bearer propagation; typecheck/tests green. | feat(x-api): search spaces by keyword |
 | 2026-09-03 | S16 | lookupSpacesById: ids+space.fields no expansions, empty ids short-circuit, map+drop bad rows, omitted data, rate-limit/bearer, chunk at 100; typecheck/tests/build green. | feat(x-api): lookup spaces by id |
+| 2026-09-03 | S17 | fanOutLiveSpaceKeywords: vowels + prepend extras, case-insensitive dedupe, trim blanks; typecheck/tests/build green. | feat(x-api): fan-out live space keywords |
 
 ## 8. Daily completion report template
 
