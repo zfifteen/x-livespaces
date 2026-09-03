@@ -13,7 +13,7 @@
  *    under the 30-minute global cooldown.
  */
 
-import { notImplementedYet } from "@/domain/result";
+import { ok } from "@/domain/result";
 import type { LiveSpacesError } from "@/domain/errors";
 import type { Result } from "@/domain/result";
 
@@ -25,9 +25,37 @@ export const DEFAULT_LIVE_DIRECTORY_KEYWORDS: readonly string[] = [
   "u",
 ];
 
+/**
+ * Build the ordered keyword list for a Refresh fan-out.
+ *
+ * Prepends trimmed non-blank extras, then the five vowels. Deduplicates
+ * case-insensitively so the first spelling wins. Never returns blanks.
+ */
 export function fanOutLiveSpaceKeywords(
   extraKeywords: readonly string[] = [],
 ): Result<readonly string[], LiveSpacesError> {
-  void extraKeywords;
-  return notImplementedYet("fanOutLiveSpaceKeywords");
+  const seen = new Set<string>();
+  const out: string[] = [];
+
+  const consider = (raw: string): void => {
+    const trimmed = raw.trim();
+    if (trimmed.length === 0) {
+      return;
+    }
+    const key = trimmed.toLowerCase();
+    if (seen.has(key)) {
+      return;
+    }
+    seen.add(key);
+    out.push(trimmed);
+  };
+
+  for (const extra of extraKeywords) {
+    consider(extra);
+  }
+  for (const vowel of DEFAULT_LIVE_DIRECTORY_KEYWORDS) {
+    consider(vowel);
+  }
+
+  return ok(out);
 }
