@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S18**
+**NEXT_SLICE: S19**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -101,9 +101,44 @@
   - Modify `fan-out-live-space-keywords` and test.
   - Commit: `feat(x-api): fan-out live space keywords`.
 
-### Remaining slices (S18+)
+### Milestone E — Cache and composition
 
-Continue per TECH_SPEC §16 order after S17. Next: KV adapter + `refreshLiveDirectory` + `loadLiveDirectory`. Details remain in the full checklist history and TECH_SPEC.
+- [x] **S18 — Implement the in-memory cache adapter.**
+  - Keep state private to each adapter instance; read-before-write returns `undefined`; write/read preserves the domain snapshot without shared test leakage.
+  - Modify: `src/lib/cache/live-directory-cache.ts`; create its test.
+  - Commit: `feat(cache): add in-memory directory cache`.
+
+- [ ] **S19 — Implement cooldown freshness calculation.**
+  - Test younger than 1800s, exactly 1800s, older, future timestamp, non-positive max age, and invalid dates.
+  - Modify `snapshotIsFresh` and its tests.
+  - Commit: `feat(cache): enforce refresh cooldown freshness`.
+
+- [ ] **S20 — Implement `refreshLiveDirectory` success and cooldown paths.**
+  - Inject cache, environment reader, fan-out/search function, and clock inputs.
+  - Fresh snapshot returns it with `refreshed: false` and zero X calls.
+  - Missing/stale snapshot performs vowel fan-out, merges, computes unfiltered live count, writes defaults plus `coverage: "official-search"`, and returns `refreshed: true`.
+  - Visitor `q` is included only on a cold cache as specified.
+  - Modify: `src/lib/refresh/refresh-live-directory.ts`; create focused tests.
+  - Commit: `feat(refresh): rebuild directory snapshots`.
+
+- [ ] **S21 — Implement last-good snapshot recovery.**
+  - Test total X failure with prior snapshot leaves the stored snapshot unchanged and returns a view marked `cached-after-failure`.
+  - Test total failure with empty cache follows the explicitly documented empty-initial-state behavior.
+  - Test partial success writes the usable result.
+  - Modify refresh code/tests only.
+  - Commit: `feat(refresh): preserve last good snapshot`.
+
+- [ ] **S22 — Implement read-only `loadLiveDirectory`.**
+  - Read cache once; never call refresh or X.
+  - Missing snapshot returns a defined empty view with caller filters.
+  - Existing snapshot applies filters to stored cards while preserving unfiltered `liveCount` and stored `generatedAt`.
+  - Cache read failures propagate as domain errors.
+  - Modify: `src/lib/directory/load-live-directory.ts`; create its test.
+  - Commit: `feat(directory): load and filter directory snapshots`.
+
+### Remaining slices (S23+)
+
+Continue per TECH_SPEC §16 after load/refresh: wire routes, analytics, Wrangler/OpenNext deploy.
 
 ## 5. Acceptance criteria (global)
 
@@ -142,6 +177,7 @@ A slice is done when:
 | 2026-09-02 | S15 | searchSpacesByKeyword: query construction state=live space.fields, empty keyword reject, map+drop bad rows, empty data ok, rate-limit/bearer propagation; typecheck/tests green. | feat(x-api): search spaces by keyword |
 | 2026-09-03 | S16 | lookupSpacesById: ids+space.fields no expansions, empty ids short-circuit, map+drop bad rows, omitted data, rate-limit/bearer, chunk at 100; typecheck/tests/build green. | feat(x-api): lookup spaces by id |
 | 2026-09-03 | S17 | fanOutLiveSpaceKeywords: vowels + prepend extras, case-insensitive dedupe, trim blanks; typecheck/tests/build green. | feat(x-api): fan-out live space keywords |
+| 2026-09-04 | S18 | in-memory LiveDirectoryCache: private cell, undefined before write, round-trip, instance isolation; snapshotIsFresh signature retained for S19; npm registry 502 blocked local verify. | feat(cache): add in-memory directory cache |
 
 ## 8. Daily completion report template
 
