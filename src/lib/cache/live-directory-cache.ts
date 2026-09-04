@@ -10,7 +10,7 @@
  * written unfiltered `DirectorySnapshot`.
  */
 
-import { notImplementedYet } from "@/domain/result";
+import { ok } from "@/domain/result";
 import type { DirectorySnapshot } from "@/domain/directory-snapshot";
 import type { LiveSpacesError } from "@/domain/errors";
 import type { Result } from "@/domain/result";
@@ -20,25 +20,50 @@ export type LiveDirectoryCache = {
   readonly writeSnapshot: (snapshot: DirectorySnapshot) => Promise<Result<void, LiveSpacesError>>;
 };
 
+/**
+ * Process-private in-memory store.
+ *
+ * Each call to `createInMemoryLiveDirectoryCache` gets its own closed-over
+ * cell so tests and concurrent processes do not share state.
+ */
 export function createInMemoryLiveDirectoryCache(): LiveDirectoryCache {
+  let stored: DirectorySnapshot | undefined;
+
   return {
-    readSnapshot: () => Promise.resolve(notImplementedYet("LiveDirectoryCache.readSnapshot")),
-    writeSnapshot: (snapshot: DirectorySnapshot) => {
-      void snapshot;
-      return Promise.resolve(notImplementedYet("LiveDirectoryCache.writeSnapshot"));
+    readSnapshot: async (): Promise<Result<DirectorySnapshot | undefined, LiveSpacesError>> => {
+      return ok(stored);
+    },
+    writeSnapshot: async (
+      snapshot: DirectorySnapshot,
+    ): Promise<Result<void, LiveSpacesError>> => {
+      stored = snapshot;
+      return ok(undefined);
     },
   };
 }
 
+/**
+ * Whether a snapshot is still inside the global Refresh cooldown window.
+ *
+ * Intended logic: return true when (now - snapshot.generatedAt) < maxAgeSeconds.
+ * Guard maxAgeSeconds > 0. Treat future generatedAt as fresh (clock skew).
+ * Non-positive maxAgeSeconds is never fresh.
+ *
+ * Note: S19 will expand tests and edge coverage; this keeps the existing
+ * signature and documented contract so callers compile.
+ */
 export function snapshotIsFresh(
   snapshot: DirectorySnapshot,
   now: Date,
   maxAgeSeconds: number,
 ): boolean {
-  // Intended logic: return true when (now - snapshot.generatedAt) < maxAgeSeconds.
-  // Guard maxAgeSeconds > 0. Treat future generatedAt as fresh (clock skew).
-  void snapshot;
-  void now;
-  void maxAgeSeconds;
-  return false;
+  if (!(maxAgeSeconds > 0)) {
+    return false;
+  }
+  const ageMs = now.getTime() - snapshot.generatedAt.getTime();
+  // Future generatedAt (clock skew) counts as fresh.
+  if (ageMs < 0) {
+    return true;
+  }
+  return ageMs < maxAgeSeconds * 1000;
 }
