@@ -45,12 +45,11 @@ export function createInMemoryLiveDirectoryCache(): LiveDirectoryCache {
 /**
  * Whether a snapshot is still inside the global Refresh cooldown window.
  *
- * Intended logic: return true when (now - snapshot.generatedAt) < maxAgeSeconds.
- * Guard maxAgeSeconds > 0. Treat future generatedAt as fresh (clock skew).
- * Non-positive maxAgeSeconds is never fresh.
- *
- * Note: S19 will expand tests and edge coverage; this keeps the existing
- * signature and documented contract so callers compile.
+ * Returns true when (now - snapshot.generatedAt) < maxAgeSeconds.
+ * - maxAgeSeconds must be positive; zero/negative/NaN → never fresh.
+ * - Future generatedAt (clock skew) counts as fresh.
+ * - Invalid Date on either side → not fresh.
+ * Strict less-than: age exactly equal to maxAgeSeconds is stale.
  */
 export function snapshotIsFresh(
   snapshot: DirectorySnapshot,
@@ -60,7 +59,12 @@ export function snapshotIsFresh(
   if (!(maxAgeSeconds > 0)) {
     return false;
   }
-  const ageMs = now.getTime() - snapshot.generatedAt.getTime();
+  const generatedMs = snapshot.generatedAt.getTime();
+  const nowMs = now.getTime();
+  if (Number.isNaN(generatedMs) || Number.isNaN(nowMs)) {
+    return false;
+  }
+  const ageMs = nowMs - generatedMs;
   // Future generatedAt (clock skew) counts as fresh.
   if (ageMs < 0) {
     return true;

@@ -5,6 +5,7 @@ import type { DirectorySnapshot } from "@/domain/directory-snapshot";
 import type { LiveSpaceCard } from "@/domain/live-space-card";
 import {
   createInMemoryLiveDirectoryCache,
+  snapshotIsFresh,
 } from "@/lib/cache/live-directory-cache";
 
 function card(id: string, title: string): LiveSpaceCard {
@@ -110,5 +111,46 @@ describe("createInMemoryLiveDirectoryCache", () => {
     expect(readResult.value.generatedAt).toBeInstanceOf(Date);
     expect(readResult.value.generatedAt.getTime()).toBe(generatedAt.getTime());
     expect(readResult.value.coverage).toBe("official-search");
+  });
+});
+
+describe("snapshotIsFresh", () => {
+  const generatedAt = new Date("2026-09-04T12:00:00.000Z");
+  const base = snapshot({ generatedAt });
+
+  it("returns true when age is younger than maxAgeSeconds", () => {
+    const now = new Date("2026-09-04T12:29:59.000Z"); // 1799s
+    expect(snapshotIsFresh(base, now, 1800)).toBe(true);
+  });
+
+  it("returns false when age is exactly maxAgeSeconds", () => {
+    const now = new Date("2026-09-04T12:30:00.000Z"); // exactly 1800s
+    expect(snapshotIsFresh(base, now, 1800)).toBe(false);
+  });
+
+  it("returns false when age is older than maxAgeSeconds", () => {
+    const now = new Date("2026-09-04T12:30:01.000Z"); // 1801s
+    expect(snapshotIsFresh(base, now, 1800)).toBe(false);
+  });
+
+  it("returns true for future generatedAt (clock skew)", () => {
+    const now = new Date("2026-09-04T11:59:00.000Z"); // generatedAt in the future
+    expect(snapshotIsFresh(base, now, 1800)).toBe(true);
+  });
+
+  it("returns false for non-positive maxAgeSeconds", () => {
+    const now = new Date("2026-09-04T12:00:01.000Z");
+    expect(snapshotIsFresh(base, now, 0)).toBe(false);
+    expect(snapshotIsFresh(base, now, -1)).toBe(false);
+    expect(snapshotIsFresh(base, now, Number.NaN)).toBe(false);
+  });
+
+  it("returns false when generatedAt or now is an invalid Date", () => {
+    const now = new Date("2026-09-04T12:00:01.000Z");
+    const invalidGenerated = snapshot({ generatedAt: new Date("not-a-date") });
+    expect(snapshotIsFresh(invalidGenerated, now, 1800)).toBe(false);
+
+    const invalidNow = new Date("not-a-date");
+    expect(snapshotIsFresh(base, invalidNow, 1800)).toBe(false);
   });
 });
