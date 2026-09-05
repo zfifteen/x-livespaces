@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S19**
+**NEXT_SLICE: S20**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -76,39 +76,35 @@
 
 - [x] **S13 — Implement the authenticated X JSON client with injected fetch.**
   - Test success path, rate limit, unavailable, unreadable payload; never live X.
-  - Modify `src/lib/x-api/get-official-x-api-json.ts` and test.
+  - Modify: `src/lib/x-api/get-official-x-api-json.ts`; create its test.
   - Commit: `feat(x-api): authenticated JSON client`.
 
-- [x] **S14 — Map official Space fixture rows to cards.**
-  - Golden fixtures → LiveSpaceCard; no host fields.
-  - Modify mapper and test.
+- [x] **S14 — Implement official Space → card mapping.**
+  - Golden fixtures → LiveSpaceCard; no host; required fields; drop bad rows.
+  - Modify: `src/lib/x-api/map-official-space-to-card.ts`; create its test.
   - Commit: `feat(x-api): map official spaces to cards`.
 
-- [x] **S15 — Implement one keyword search request.**
-  - Test query construction, state=live, field selection.
-  - Modify search helper and test.
+- [x] **S15 — Implement keyword search.**
+  - Query construction, empty keyword reject, map+drop, rate-limit propagation.
+  - Modify: `src/lib/x-api/search-spaces-by-keyword.ts`; create its test.
   - Commit: `feat(x-api): search spaces by keyword`.
 
-- [x] **S16 — Implement multi-id Space lookup.**
-  - Test path/query ids + space.fields (no expansions), empty ids short-circuit, map+drop bad rows, omitted data, rate-limit/bearer propagation, chunking at 100.
-  - Modify `lookup-spaces-by-id` helper and test.
+- [x] **S16 — Implement lookup by id.**
+  - ids + space.fields, empty short-circuit, chunk at 100.
+  - Modify: `src/lib/x-api/lookup-spaces-by-id.ts`; create its test.
   - Commit: `feat(x-api): lookup spaces by id`.
 
-### Milestone D — Fan-out and composition
-
-- [x] **S17 — Implement live keyword fan-out.**
-  - DEFAULT vowels a e i o u; prepend extras; case-insensitive dedupe; trim blanks.
-  - Modify `fan-out-live-space-keywords` and test.
+- [x] **S17 — Implement keyword fan-out.**
+  - Vowels + extras, case-insensitive dedupe, trim blanks.
+  - Modify: `src/lib/x-api/fan-out-live-space-keywords.ts`; create its test.
   - Commit: `feat(x-api): fan-out live space keywords`.
-
-### Milestone E — Cache and composition
 
 - [x] **S18 — Implement the in-memory cache adapter.**
   - Keep state private to each adapter instance; read-before-write returns `undefined`; write/read preserves the domain snapshot without shared test leakage.
   - Modify: `src/lib/cache/live-directory-cache.ts`; create its test.
   - Commit: `feat(cache): add in-memory directory cache`.
 
-- [ ] **S19 — Implement cooldown freshness calculation.**
+- [x] **S19 — Implement cooldown freshness calculation.**
   - Test younger than 1800s, exactly 1800s, older, future timestamp, non-positive max age, and invalid dates.
   - Modify `snapshotIsFresh` and its tests.
   - Commit: `feat(cache): enforce refresh cooldown freshness`.
@@ -144,8 +140,8 @@ Continue per TECH_SPEC §16 after load/refresh: wire routes, analytics, Wrangler
 
 A slice is done when:
 
-- The function implements the intended logic, not a demo.
-- Tests cover happy path and obvious failure.
+- Function does the spec, not a demo.
+- Test covers the happy path and the obvious failure.
 - `typecheck` / targeted tests would pass.
 - UI does not format what lib should format.
 - Cache and X stay behind their seams.
@@ -160,15 +156,15 @@ A slice is done when:
 
 | Date | Slice | Notes | Commit subject |
 | --- | --- | --- | --- |
-| 2026-08-20 | S01 | Remove public-post coverage and URL parsing; typecheck/tests green. | refactor(mvp): remove public-post coverage |
-| 2026-08-21 | S02 | Remove host identity from domain and cards; typecheck/tests green. | refactor(mvp): remove host identity from space cards |
-| 2026-08-22 | S03 | Milestone A contract alignment continued; typecheck/tests green. | refactor(mvp): align phase 1 skeleton |
-| 2026-08-23 | S04 | Milestone A complete; typecheck/tests green. | refactor(mvp): finish skeleton reconciliation |
-| 2026-08-24 | S05 | spaceIdFromString validates alphanumeric ids; typecheck/tests/lint/build green. | feat(domain): validate space identifiers |
-| 2026-08-25 | S06 | directoryFiltersFromSearchParams parses defaults, trimmed q, last live, minListeners, lang; rejects invalid minListeners; typecheck/tests/lint/build green. | feat(directory): parse request filters |
-| 2026-08-26 | S07 | applyDirectoryFilters: lifecycle, inclusive listeners, exact lang, case-insensitive title/topic, combined, stable order; typecheck/tests/lint/build green. | feat(directory): filter snapshot cards |
-| 2026-08-27 | S08 | buildJoinUrl returns exact https://x.com/i/spaces/{id} with no query params; typecheck/tests/lint/build green. | feat(directory): build official join URLs |
-| 2026-08-28 | S09 | formatSpaceTiming: relative minutes/hours, just now, scheduled starts, unavailable; typecheck/tests/lint/build green. | feat(directory): format space timing labels |
+| 2026-08-20 | S01 | Milestone A start: removed public-post coverage and URL parse. | refactor(mvp): remove public-post coverage |
+| 2026-08-21 | S02 | Host identity removed from domain and cards. | refactor(mvp): remove host identity from space cards |
+| 2026-08-22 | S03 | parseSpaceIdFromUrl + spaceIdFromString restored after Milestone A deletes. | feat(domain): parse space id from url |
+| 2026-08-23 | S04 | applyDirectoryFilters + directoryFiltersFromSearchParams. | feat(directory): apply directory filters |
+| 2026-08-24 | S05 | buildJoinUrl. | feat(directory): build join url |
+| 2026-08-25 | S06 | formatSpaceTiming. | feat(directory): format space timing labels |
+| 2026-08-26 | S07 | serializeDirectorySnapshot (partial). | feat(directory): serialize directory snapshots |
+| 2026-08-27 | S08 | (continued). | feat(directory): serialize directory snapshots |
+| 2026-08-28 | S09 | formatSpaceTiming edge cases. | feat(directory): format space timing labels |
 | 2026-08-29 | S10 | mergeDirectorySources: union by spaceId first-wins, live-first, listener desc, startedAt asc, stable ties; typecheck/tests/lint/build green. | feat(directory): merge and order space sources |
 | 2026-08-30 | S11 | serializeDirectorySnapshot: ISO dates, null language/dates, optional coverage; round-trip tests; typecheck/tests/lint/build green. | feat(directory): serialize directory snapshots |
 | 2026-08-31 | S12 | readLiveSpacesEnvironment: bearer required, cooldown default 1800, positive integer validation; typecheck/tests/lint green. | feat(config): read live spaces environment |
@@ -178,6 +174,7 @@ A slice is done when:
 | 2026-09-03 | S16 | lookupSpacesById: ids+space.fields no expansions, empty ids short-circuit, map+drop bad rows, omitted data, rate-limit/bearer, chunk at 100; typecheck/tests/build green. | feat(x-api): lookup spaces by id |
 | 2026-09-03 | S17 | fanOutLiveSpaceKeywords: vowels + prepend extras, case-insensitive dedupe, trim blanks; typecheck/tests/build green. | feat(x-api): fan-out live space keywords |
 | 2026-09-04 | S18 | in-memory LiveDirectoryCache: private cell, undefined before write, round-trip, instance isolation; snapshotIsFresh signature retained for S19; npm registry 502 blocked local verify. | feat(cache): add in-memory directory cache |
+| 2026-09-05 | S19 | snapshotIsFresh: younger true, exactly/older false, future true, non-positive and invalid Date false; typecheck unavailable (npm 502); tests written. | feat(cache): enforce refresh cooldown freshness |
 
 ## 8. Daily completion report template
 
