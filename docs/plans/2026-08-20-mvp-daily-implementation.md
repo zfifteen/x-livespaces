@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S20**
+**NEXT_SLICE: S21**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -96,7 +96,6 @@
 
 - [x] **S17 — Implement keyword fan-out.**
   - Vowels + extras, case-insensitive dedupe, trim blanks.
-  - Modify: `src/lib/x-api/fan-out-live-space-keywords.ts`; create its test.
   - Commit: `feat(x-api): fan-out live space keywords`.
 
 - [x] **S18 — Implement the in-memory cache adapter.**
@@ -109,7 +108,7 @@
   - Modify `snapshotIsFresh` and its tests.
   - Commit: `feat(cache): enforce refresh cooldown freshness`.
 
-- [ ] **S20 — Implement `refreshLiveDirectory` success and cooldown paths.**
+- [x] **S20 — Implement `refreshLiveDirectory` success and cooldown paths.**
   - Inject cache, environment reader, fan-out/search function, and clock inputs.
   - Fresh snapshot returns it with `refreshed: false` and zero X calls.
   - Missing/stale snapshot performs vowel fan-out, merges, computes unfiltered live count, writes defaults plus `coverage: "official-search"`, and returns `refreshed: true`.
@@ -148,7 +147,7 @@ A slice is done when:
 
 ## 6. Blockers and discovered work
 
-| Date | Slice | Status | Note |
+| Date | Slice | Status | Notes |
 | --- | --- | --- | --- |
 | 2026-08-20 | S01 | Resolved | Daily run truncated this plan (deleted S03–S38 and §5–8). Restored from `0955663`. Agents must edit only NEXT_SLICE, checkbox, §6, and §7. |
 
@@ -175,6 +174,7 @@ A slice is done when:
 | 2026-09-03 | S17 | fanOutLiveSpaceKeywords: vowels + prepend extras, case-insensitive dedupe, trim blanks; typecheck/tests/build green. | feat(x-api): fan-out live space keywords |
 | 2026-09-04 | S18 | in-memory LiveDirectoryCache: private cell, undefined before write, round-trip, instance isolation; snapshotIsFresh signature retained for S19; npm registry 502 blocked local verify. | feat(cache): add in-memory directory cache |
 | 2026-09-05 | S19 | snapshotIsFresh: younger true, exactly/older false, future true, non-positive and invalid Date false; typecheck unavailable (npm 502); tests written. | feat(cache): enforce refresh cooldown freshness |
+| 2026-09-06 | S20 | refreshLiveDirectory success/cooldown: inject env+search, fresh skip, cold/stale fan-out+merge+write official-search, extraKeywords only when cold; tests green; typecheck clean for slice. | feat(refresh): rebuild directory snapshots |
 
 ## 8. Daily completion report template
 
