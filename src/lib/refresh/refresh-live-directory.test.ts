@@ -239,4 +239,138 @@ describe("refreshLiveDirectory", () => {
       expect(req.state).toBe("live");
     }
   });
+
+  it("on total X failure with prior snapshot: leaves store unchanged, returns cached-after-failure", async () => {
+    const cache = createInMemoryLiveDirectoryCache();
+    const prior = snapshot({
+      generatedAt: new Date("2026-09-05T11:00:00.000Z"), // stale
+      liveCount: 1,
+      visibleCards: [card("1OLD", "Old")],
+      coverage: "official-search",
+    });
+    await cache.writeSnapshot(prior);
+
+    const searchMock = vi.fn<SearchSpacesByKeywordFn>(() =>
+      Promise.resolve(
+        err({
+          kind: "x-api-unavailable",
+          httpStatus: 503,
+          message: "X unavailable",
+        }),
+      ),
+    );
+
+    const result = await refreshLiveDirectory(
+      makeRequest({
+        cache,
+        now: new Date("2026-09-05T12:00:00.000Z"),
+        searchSpacesByKeyword: searchMock,
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.refreshed).toBe(true);
+    expect(result.value.snapshot.coverage).toBe("cached-after-failure");
+    expect(result.value.snapshot.visibleCards).toEqual(prior.visibleCards);
+    expect(result.value.snapshot.generatedAt).toEqual(prior.generatedAt);
+    expect(result.value.snapshot.liveCount).toBe(prior.liveCount);
+
+    // Stored snapshot unchanged (still official-search, original generatedAt).
+    const readBack = await cache.readSnapshot();
+    expect(readBack.ok).toBe(true);
+    if (!readBack.ok) return;
+    expect(readBack.value).toEqual(prior);
+    expect(searchMock).toHaveBeenCalledTimes(5);
+  });
+
+  it("on total X failure with empty cache: writes empty official-search snapshot", async () => {
+    const cache = createInMemoryLiveDirectoryCache();
+    const now = new Date("2026-09-05T12:00:00.000Z");
+
+    const searchMock = vi.fn<SearchSpacesByKeywordFn>(() =>
+      Promise.resolve(
+        err({
+          kind: "x-api-unavailable",
+          httpStatus: 503,
+          message: "X unavailable",
+        }),
+      ),
+    );
+
+    const result = await refreshLiveDirectory(
+      makeRequest({
+        cache,
+        now,
+        searchSpacesByKeyword: searchMock,
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.refreshed).toBe(true);
+    const snap = result.value.snapshot;
+    expect(snap.generatedAt).toEqual(now);
+    expect(snap.liveCount).toBe(0);
+    expect(snap.visibleCards).toEqual([]);
+    expect(snap.coverage).toBe("official-search");
+    expect(snap.appliedFilters).toEqual(DEFAULT_DIRECTORY_FILTERS);
+
+    const readBack = await cache.readSnapshot();
+    expect(readBack.ok).toBe(true);
+    if (!readBack.ok) return;
+    expect(readBack.value).toEqual(snap);
+  });
+
+  it("on partial success: merges successful batches and writes official-search", async () => {
+    const cache = createInMemoryLiveDirectoryCache();
+    const prior = snapshot({
+      generatedAt: new Date("2026-09-05T11:00:00.000Z"),
+      liveCount: 1,
+      visibleCards: [card("1OLD", "Old")],
+    });
+    await cache.writeSnapshot(prior);
+
+    const now = new Date("2026-09-05T12:00:00.000Z");
+    const searchMock = vi.fn<SearchSpacesByKeywordFn>(
+      (req: SearchSpacesByKeywordRequest) => {
+        if (req.keywordQuery === "a") {
+          return Promise.resolve(ok([card("1AAA", "From A", 50)]));
+        }
+        if (req.keywordQuery === "e") {
+          return Promise.resolve(
+            err({
+              kind: "x-api-rate-limited",
+              retryAfterSeconds: 60,
+              message: "rate limited",
+            }),
+          );
+        }
+        // other vowels succeed empty
+        return Promise.resolve(ok([] as readonly LiveSpaceCard[]));
+      },
+    );
+
+    const result = await refreshLiveDirectory(
+      makeRequest({
+        cache,
+        now,
+        searchSpacesByKeyword: searchMock,
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.refreshed).toBe(true);
+    const snap = result.value.snapshot;
+    expect(snap.coverage).toBe("official-search");
+    expect(snap.generatedAt).toEqual(now);
+    expect(snap.visibleCards.map((c) => c.spaceId)).toEqual(["1AAA"]);
+    expect(snap.liveCount).toBe(1);
+
+    const readBack = await cache.readSnapshot();
+    expect(readBack.ok).toBe(true);
+    if (!readBack.ok) return;
+    expect(readBack.value).toEqual(snap);
+  });
 });

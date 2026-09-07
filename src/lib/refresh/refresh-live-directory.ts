@@ -9,12 +9,13 @@
  *    without calling X.
  * 3. Build the keyword fan-out list (vowels a e i o u). If the visitor
  *    supplied a keyword on a cold cache, prepend it.
- * 4. For each keyword, searchSpacesByKeyword (state=live).
- * 5. mergeDirectorySources on the official batches.
+ * 4. For each keyword, searchSpacesByKeyword (state=live). Collect successes;
+ *    tolerate per-keyword failures so partial fan-out still yields a usable set.
+ * 5. mergeDirectorySources on the successful official batches.
  * 6. Count live cards for liveCount.
  * 7. Write snapshot with coverage "official-search" when any cards arrive
  *    or the cache is empty. On total X failure with a prior snapshot, leave
- *    KV unchanged (handled in S21).
+ *    KV unchanged and return the prior marked coverage "cached-after-failure".
  * 8. Return { snapshot, refreshed: true } when X was called.
  *
  * No tweet / public-post harvest. No cron. Load-time filters stay in
@@ -95,6 +96,9 @@ export async function refreshLiveDirectory(
   const keywords = keywordResult.value;
 
   const batches: (readonly LiveSpaceCard[])[] = [];
+  let anySearchSucceeded = false;
+  let lastSearchError: LiveSpacesError | undefined;
+
   for (const keyword of keywords) {
     const searchResult = await request.searchSpacesByKeyword({
       bearerToken: env.xApiBearerToken,
@@ -102,10 +106,36 @@ export async function refreshLiveDirectory(
       state: "live",
     });
     if (!searchResult.ok) {
-      // S20 success path: propagate. S21 will add last-good recovery.
-      return searchResult;
+      lastSearchError = searchResult.error;
+      continue;
     }
+    anySearchSucceeded = true;
     batches.push(searchResult.value);
+  }
+
+  // Total X failure: every keyword search failed.
+  if (!anySearchSucceeded) {
+    if (prior !== undefined) {
+      // Leave stored snapshot unchanged. Return a view marked cached-after-failure.
+      const recovered: DirectorySnapshot = {
+        ...prior,
+        coverage: "cached-after-failure",
+      };
+      return ok({ snapshot: recovered, refreshed: true });
+    }
+    // Cold cache + total failure: empty initial board (write empty official-search).
+    const empty: DirectorySnapshot = {
+      generatedAt: request.now,
+      liveCount: 0,
+      appliedFilters: DEFAULT_DIRECTORY_FILTERS,
+      visibleCards: [],
+      coverage: "official-search",
+    };
+    const writeResult = await request.cache.writeSnapshot(empty);
+    if (!writeResult.ok) {
+      return writeResult;
+    }
+    return ok({ snapshot: empty, refreshed: true });
   }
 
   const mergeResult = mergeDirectorySources({ officialBatches: batches });
@@ -124,6 +154,7 @@ export async function refreshLiveDirectory(
   };
 
   // Write when we have cards, or when cache was empty (initial empty board).
+  // Partial success always writes the usable merge.
   if (visibleCards.length > 0 || isCold) {
     const writeResult = await request.cache.writeSnapshot(snapshot);
     if (!writeResult.ok) {

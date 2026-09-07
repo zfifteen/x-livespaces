@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S21**
+**NEXT_SLICE: S22**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -116,7 +116,7 @@
   - Modify: `src/lib/refresh/refresh-live-directory.ts`; create focused tests.
   - Commit: `feat(refresh): rebuild directory snapshots`.
 
-- [ ] **S21 — Implement last-good snapshot recovery.**
+- [x] **S21 — Implement last-good snapshot recovery.**
   - Test total X failure with prior snapshot leaves the stored snapshot unchanged and returns a view marked `cached-after-failure`.
   - Test total failure with empty cache follows the explicitly documented empty-initial-state behavior.
   - Test partial success writes the usable result.
@@ -175,6 +175,7 @@ A slice is done when:
 | 2026-09-04 | S18 | in-memory LiveDirectoryCache: private cell, undefined before write, round-trip, instance isolation; snapshotIsFresh signature retained for S19; npm registry 502 blocked local verify. | feat(cache): add in-memory directory cache |
 | 2026-09-05 | S19 | snapshotIsFresh: younger true, exactly/older false, future true, non-positive and invalid Date false; typecheck unavailable (npm 502); tests written. | feat(cache): enforce refresh cooldown freshness |
 | 2026-09-06 | S20 | refreshLiveDirectory success/cooldown: inject env+search, fresh skip, cold/stale fan-out+merge+write official-search, extraKeywords only when cold; tests green; typecheck clean for slice. | feat(refresh): rebuild directory snapshots |
+| 2026-09-07 | S21 | last-good recovery: total X failure with prior leaves store unchanged + returns cached-after-failure; cold total failure writes empty official-search; partial success merges successes and writes; tests added. | feat(refresh): preserve last good snapshot |
 
 ## 8. Daily completion report template
 
