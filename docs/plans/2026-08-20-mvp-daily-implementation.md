@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S22**
+**NEXT_SLICE: S23**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -123,7 +123,7 @@
   - Modify refresh code/tests only.
   - Commit: `feat(refresh): preserve last good snapshot`.
 
-- [ ] **S22 — Implement read-only `loadLiveDirectory`.**
+- [x] **S22 — Implement read-only `loadLiveDirectory`.**
   - Read cache once; never call refresh or X.
   - Missing snapshot returns a defined empty view with caller filters.
   - Existing snapshot applies filters to stored cards while preserving unfiltered `liveCount` and stored `generatedAt`.
@@ -176,6 +176,7 @@ A slice is done when:
 | 2026-09-05 | S19 | snapshotIsFresh: younger true, exactly/older false, future true, non-positive and invalid Date false; typecheck unavailable (npm 502); tests written. | feat(cache): enforce refresh cooldown freshness |
 | 2026-09-06 | S20 | refreshLiveDirectory success/cooldown: inject env+search, fresh skip, cold/stale fan-out+merge+write official-search, extraKeywords only when cold; tests green; typecheck clean for slice. | feat(refresh): rebuild directory snapshots |
 | 2026-09-07 | S21 | last-good recovery: total X failure with prior leaves store unchanged + returns cached-after-failure; cold total failure writes empty official-search; partial success merges successes and writes; tests added. | feat(refresh): preserve last good snapshot |
+| 2026-09-08 | S22 | loadLiveDirectory: read-only cache read, empty view on miss, filter on hit preserving liveCount/generatedAt/coverage, propagate cache errors; 5 tests green. | feat(directory): load and filter directory snapshots |
 
 ## 8. Daily completion report template
 
