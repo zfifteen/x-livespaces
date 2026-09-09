@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S30**
+**NEXT_SLICE: COMPLETE**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -166,9 +166,13 @@
   - wrangler.toml KV placeholders + GET_SPACES_RATE_LIMITER 60/min/IP; OpenNext bindings wired; executable runbook.
   - Commit: `feat(deploy): final wrangler config + executable deploy runbook`.
 
-### Remaining slices (S30)
+- [x] **S30 — Post-deploy smoke, SEO, docs and copy polish.**
+  - Coordinator live smoke recorded (rate-limit / last-good / missing-bearer / cooldown); SEO + README + sample copy.
+  - Commit: `feat(launch): post-deploy smoke, SEO, docs and copy polish`.
 
-Post-deploy smoke, SEO, copy polish after coordinator deploy.
+### Remaining slices
+
+None. NEXT_SLICE is COMPLETE.
 
 ## 5. Acceptance criteria (global)
 
@@ -192,6 +196,7 @@ A slice is done when:
 | 2026-09-09 | S27 | Resolved | wrangler + OpenNext config; OpenNext build succeeded locally; no live deploy. |
 | 2026-09-09 | S28 | Resolved | Refresh falsifier hardening; single-flight is per isolate. |
 | 2026-09-09 | S29 | Resolved | In-worker GET /api/spaces 60/min/IP; runbook is coordinator-executable. |
+| 2026-09-09 | S30 | Resolved | Live smoke recorded from coordinator; SEO/README/copy; no secret rotate. |
 
 ## 7. Progress ledger
 
@@ -226,6 +231,7 @@ A slice is done when:
 | 2026-09-09 | S27 | wrangler.toml + OpenNext 1.20.6 + next 16.3.3 + runbook; OpenNext build OK; no wrangler login/deploy. | feat(deploy): wrangler + OpenNext config and deploy runbook |
 | 2026-09-09 | S28 | Warm empty last-good; cold fail no write; 429 single-flight; sample copy; startedAt older-first comment. | feat(refresh): falsifier hardening — last-good, no cooldown poisoning, single-flight 429 |
 | 2026-09-09 | S29 | In-worker 60/min/IP rate limit; KV placeholders; executable deploy runbook. | feat(deploy): final wrangler config + executable deploy runbook |
+| 2026-09-09 | S30 | SEO metadata, README, sample copy; coordinator live smoke documented. | feat(launch): post-deploy smoke, SEO, docs and copy polish |
 
 ## 8. Daily completion report template
 

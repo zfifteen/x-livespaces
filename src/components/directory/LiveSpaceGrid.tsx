@@ -4,6 +4,7 @@
 
 import { LiveSpaceCardView } from "@/components/directory/LiveSpaceCardView";
 import type { LiveSpaceCard } from "@/domain/live-space-card";
+import { EMPTY_SNAPSHOT_COPY } from "@/lib/seo/live-spaces-metadata";
 
 type LiveSpaceGridProps = {
   readonly cards: readonly LiveSpaceCard[];
@@ -13,7 +14,7 @@ export function LiveSpaceGrid({ cards }: LiveSpaceGridProps) {
   if (cards.length === 0) {
     return (
       <p className="space-grid__empty" role="status">
-        No snapshot in this view yet. Refresh to load a broad sample of live Spaces.
+        {EMPTY_SNAPSHOT_COPY}
       </p>
     );
   }

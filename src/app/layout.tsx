@@ -1,12 +1,9 @@
-import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { CloudflareWebAnalyticsSnippet } from "@/components/analytics/CloudflareWebAnalyticsSnippet";
+import { liveSpacesMetadata } from "@/lib/seo/live-spaces-metadata";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "LiveSpaces",
-  description: "A public directory of live X Spaces.",
-};
+export const metadata = liveSpacesMetadata;
 
 type RootLayoutProps = {
   readonly children: ReactNode;

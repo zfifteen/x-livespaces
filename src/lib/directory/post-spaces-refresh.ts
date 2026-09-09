@@ -3,6 +3,10 @@
  */
 
 import { err, ok, type Result } from "@/domain/result";
+import {
+  REFRESH_HTTP_ERROR_COPY,
+  REFRESH_NETWORK_ERROR_COPY,
+} from "@/lib/seo/live-spaces-metadata";
 
 export type RefreshPostError = {
   readonly message: string;
@@ -40,13 +44,13 @@ export async function postSpacesRefresh(
       status: response.status,
       message: messageFromBody(
         parsed,
-        "Couldn't refresh the directory. Try again in a few minutes.",
+        REFRESH_HTTP_ERROR_COPY,
       ),
     });
   } catch {
     return err({
       status: undefined,
-      message: "Couldn't refresh the directory. Check your connection and try again.",
+      message: REFRESH_NETWORK_ERROR_COPY,
     });
   }
 }
