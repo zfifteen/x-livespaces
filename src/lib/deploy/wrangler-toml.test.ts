@@ -11,18 +11,18 @@ describe("wrangler.toml S29 contract", () => {
     expect(toml).not.toMatch(/^\s*runtime\s*=\s*"edge"/m);
   });
 
-  it("declares two separate KV bindings with placeholder ids", () => {
+  it("declares two separate KV bindings with real ids (no placeholders)", () => {
     expect(toml).toMatch(/binding\s*=\s*"LIVE_DIRECTORY"/);
     expect(toml).toMatch(/binding\s*=\s*"NEXT_INC_CACHE_KV"/);
-    expect(toml).toMatch(/REPLACE_WITH_LIVE_DIRECTORY_KV_NAMESPACE_ID/);
-    expect(toml).toMatch(/REPLACE_WITH_NEXT_INC_CACHE_KV_NAMESPACE_ID/);
+    expect(toml).not.toMatch(/REPLACE_WITH_/);
     expect(toml).not.toMatch(/account_id\s*=/);
+    const ids = [...toml.matchAll(/^id\s*=\s*"([0-9a-f]{32})"/gm)];
+    expect(ids.length).toBe(2);
+    expect(new Set(ids.map((m) => m[1])).size).toBe(2);
   });
 
-  it("declares in-worker GET /api/spaces rate limit 60 per 60s", () => {
-    expect(toml).toMatch(/name\s*=\s*"GET_SPACES_RATE_LIMITER"/);
-    expect(toml).toMatch(/namespace_id\s*=\s*"1001"/);
-    expect(toml).toMatch(/limit\s*=\s*60/);
-    expect(toml).toMatch(/period\s*=\s*60/);
+  it("does not bind the Workers Rate Limiting binding (KV-backed limiter instead)", () => {
+    expect(toml).not.toMatch(/\[\[ratelimits\]\]/);
+    expect(toml).not.toMatch(/GET_SPACES_RATE_LIMITER/);
   });
 });

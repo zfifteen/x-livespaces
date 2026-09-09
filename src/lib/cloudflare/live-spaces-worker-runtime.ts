@@ -37,7 +37,11 @@ export async function readLiveSpacesWorkerEnv(): Promise<{
       liveDirectoryKv: env.LIVE_DIRECTORY,
       rateLimitBinding: env.GET_SPACES_RATE_LIMITER,
     };
-  } catch {
+  } catch (error) {
+    console.error(
+      "[live-spaces] getCloudflareContext failed:",
+      error instanceof Error ? error.message : String(error),
+    );
     return {
       liveDirectoryKv: undefined,
       rateLimitBinding: undefined,

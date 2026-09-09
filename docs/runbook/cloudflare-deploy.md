@@ -82,7 +82,16 @@ Equivalent: `npm run deploy:worker` (build + deploy) after KV ids are filled and
 
 ## 6. In-worker rate limit (already in the Worker)
 
-`GET /api/spaces` uses `GET_SPACES_RATE_LIMITER.limit({ key: ip })` (`CF-Connecting-IP`). Over 60/min → **429** + `Retry-After`. If the binding is missing at runtime, the Worker falls back to a `LIVE_DIRECTORY` KV fixed window (`ratelimit:get-spaces:{ip}:{window}`). OPTIONS is not limited.
+GET /api/spaces is limited to 60 req / 60s per IP (CF-Connecting-IP) via a
+LIVE_DIRECTORY KV fixed window. Over 60/min returns 429 + Retry-After.
+KV failures fail open (log + allow) so a KV outage never 500s the site.
+OPTIONS is not limited.
+
+Why KV and not the Workers Rate Limiting binding: live-tested 2026-09-09,
+the binding never denied over-limit traffic (150 sequential + 70 parallel
+requests, zero 429s). Cloudflare documents it as permissive and eventually
+consistent per isolate/location, so it cannot gate a hard 60/min. The
+ratelimits block was removed from wrangler.toml; the KV limiter is enforced.
 
 ## 7. Post-deploy smoke
 

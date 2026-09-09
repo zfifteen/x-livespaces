@@ -1,9 +1,14 @@
 /**
  * In-worker rate limit for GET /api/spaces: 60 req/min per IP.
  *
- * Prefer the Workers Rate Limiting binding (free-plan compatible, GA).
- * Fall back to a LIVE_DIRECTORY KV fixed window when the binding is absent.
- * Local `next dev` with neither binding uses allow-all.
+ * Prefer the LIVE_DIRECTORY KV fixed window: it is deterministic and was
+ * verified live 2026-09-09 (over-limit requests get 429 + Retry-After).
+ * The Workers Rate Limiting binding is only a fallback: live-tested the same
+ * day, its `limit()` never denied across 150 sequential and 70 parallel
+ * over-limit requests (Cloudflare documents it as permissive and eventually
+ * consistent per isolate/location, so it cannot gate a hard 60/min).
+ * Local `next dev` with neither uses allow-all.
+ * KV failures fail open (log + allow) so a KV outage never 500s the site.
  */
 
 import type { KvNamespaceLike } from "@/lib/cache/kv-namespace";
@@ -72,20 +77,28 @@ export function createFixedWindowGetSpacesRateLimiter(options: {
   const windowSeconds = options.windowSeconds ?? GET_SPACES_RATE_WINDOW_SECONDS;
   return {
     consume: async ({ ip, now }): Promise<RateLimitConsumeResult> => {
-      const start = windowStartUnixSeconds(now, windowSeconds);
-      const key = `ratelimit:get-spaces:${ip}:${String(start)}`;
-      const raw = await options.kv.get(key);
-      const count = raw === null ? 0 : Number(raw);
-      const next = Number.isFinite(count) ? count + 1 : 1;
-      if (next > limit) {
-        const elapsed = Math.floor(now.getTime() / 1000) - start;
-        const retryAfterSeconds = Math.max(1, windowSeconds - elapsed);
-        return { allowed: false, retryAfterSeconds };
+      try {
+        const start = windowStartUnixSeconds(now, windowSeconds);
+        const key = `ratelimit:get-spaces:${ip}:${String(start)}`;
+        const raw = await options.kv.get(key);
+        const count = raw === null ? 0 : Number(raw);
+        const next = Number.isFinite(count) ? count + 1 : 1;
+        if (next > limit) {
+          const elapsed = Math.floor(now.getTime() / 1000) - start;
+          const retryAfterSeconds = Math.max(1, windowSeconds - elapsed);
+          return { allowed: false, retryAfterSeconds };
+        }
+        await options.kv.put(key, String(next), {
+          expirationTtl: windowSeconds,
+        });
+        return { allowed: true };
+      } catch (error) {
+        console.error(
+          "[live-spaces] KV rate limiter failed open:",
+          error instanceof Error ? error.message : String(error),
+        );
+        return { allowed: true };
       }
-      await options.kv.put(key, String(next), {
-        expirationTtl: windowSeconds,
-      });
-      return { allowed: true };
     },
   };
 }
@@ -101,11 +114,11 @@ export function resolveGetSpacesRateLimiter(options: {
   readonly binding?: WorkersRateLimitBinding | undefined;
   readonly kv?: KvNamespaceLike | undefined;
 }): GetSpacesRateLimiter {
-  if (options.binding !== undefined) {
-    return createWorkersBindingGetSpacesRateLimiter(options.binding);
-  }
   if (options.kv !== undefined) {
     return createFixedWindowGetSpacesRateLimiter({ kv: options.kv });
+  }
+  if (options.binding !== undefined) {
+    return createWorkersBindingGetSpacesRateLimiter(options.binding);
   }
   return allowAll;
 }

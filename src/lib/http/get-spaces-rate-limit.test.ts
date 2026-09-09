@@ -95,10 +95,18 @@ describe("createFixedWindowGetSpacesRateLimiter", () => {
 });
 
 describe("resolveGetSpacesRateLimiter", () => {
-  it("prefers the Workers binding, then KV, then allow-all", async () => {
+  it("prefers KV, then the Workers binding, then allow-all", async () => {
+    const now = new Date("2026-09-09T12:00:00.000Z");
+    const kvLimiter = resolveGetSpacesRateLimiter({
+      binding: fakeWorkersBinding(0),
+      kv: createFakeKvNamespace(),
+    });
+    expect(await kvLimiter.consume({ ip: "1.1.1.1", now })).toEqual({
+      allowed: true,
+    });
+
     const binding = fakeWorkersBinding(1);
     const fromBinding = resolveGetSpacesRateLimiter({ binding });
-    const now = new Date("2026-09-09T12:00:00.000Z");
     expect(await fromBinding.consume({ ip: "1.1.1.1", now })).toEqual({
       allowed: true,
     });
@@ -107,18 +115,25 @@ describe("resolveGetSpacesRateLimiter", () => {
       retryAfterSeconds: 60,
     });
 
-    const kvLimiter = resolveGetSpacesRateLimiter({
-      kv: createFakeKvNamespace(),
-    });
-    expect(await kvLimiter.consume({ ip: "1.1.1.1", now })).toEqual({
-      allowed: true,
-    });
-
     const open = resolveGetSpacesRateLimiter({});
     expect(await open.consume({ ip: "1.1.1.1", now })).toEqual({
       allowed: true,
     });
     expect(await open.consume({ ip: "1.1.1.1", now })).toEqual({
+      allowed: true,
+    });
+  });
+});
+
+describe("createFixedWindowGetSpacesRateLimiter failure mode", () => {
+  it("fails open when KV throws", async () => {
+    const brokenKv = {
+      get: (): Promise<string | null> => Promise.reject(new Error("KV down")),
+      put: (): Promise<void> => Promise.reject(new Error("KV down")),
+    };
+    const limiter = createFixedWindowGetSpacesRateLimiter({ kv: brokenKv });
+    const now = new Date("2026-09-09T12:00:00.000Z");
+    expect(await limiter.consume({ ip: "203.0.113.9", now })).toEqual({
       allowed: true,
     });
   });

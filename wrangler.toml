@@ -14,21 +14,17 @@ binding = "ASSETS"
 # Directory snapshot (S26): key snapshot:v1. Soft TTL is generatedAt in app code.
 [[kv_namespaces]]
 binding = "LIVE_DIRECTORY"
-id = "REPLACE_WITH_LIVE_DIRECTORY_KV_NAMESPACE_ID"
-preview_id = "REPLACE_WITH_LIVE_DIRECTORY_KV_PREVIEW_ID"
+id = "4dbf7012107e4cb694ff13f07e13380f"
+preview_id = "6370af6feb73491ba44ea95dda268cec"
 
 # OpenNext incremental cache — NEVER the same namespace as LIVE_DIRECTORY.
 [[kv_namespaces]]
 binding = "NEXT_INC_CACHE_KV"
-id = "REPLACE_WITH_NEXT_INC_CACHE_KV_NAMESPACE_ID"
-preview_id = "REPLACE_WITH_NEXT_INC_CACHE_KV_PREVIEW_ID"
+id = "82a12937ee074a49b1460fab38fe295b"
+preview_id = "67e2d239ee8a42a492bbfec426538c0e"
 
-# In-worker GET /api/spaces limit: 60 req / 60s per IP.
-# namespace_id is a developer-chosen integer unique on the account, not a CF resource id.
-[[ratelimits]]
-name = "GET_SPACES_RATE_LIMITER"
-namespace_id = "1001"
-
-[ratelimits.simple]
-limit = 60
-period = 60
+# GET /api/spaces rate limiting (60 req / 60s per IP) is enforced in-worker via
+# a LIVE_DIRECTORY KV fixed window (src/lib/http/get-spaces-rate-limit.ts).
+# The Workers Rate Limiting binding was live-tested 2026-09-09 and never denied
+# over-limit traffic (documented as permissive/eventually-consistent), so it is
+# intentionally not bound here.
