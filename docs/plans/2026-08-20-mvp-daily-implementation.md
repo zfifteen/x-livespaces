@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S24**
+**NEXT_SLICE: S25**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -137,9 +137,15 @@
   - `POST /api/spaces/refresh` calls `refreshLiveDirectory` under the 1800s cooldown.
   - Commit: `feat(routes): wire GET /, GET /api/spaces, POST /api/spaces/refresh`.
 
-### Remaining slices (S24+)
+- [x] **S24 — Refresh button UI.**
+  - Hero button POSTs `/api/spaces/refresh`; disabled in-flight and during cooldown.
+  - Label from lib `formatRefreshedAgo` (“Refresh” / “Refreshed N min ago” / “Refreshing…”).
+  - Honest error state; hero copy is a broad sample, not a census.
+  - Commit: `feat(ui): refresh button with in-flight state and refreshed-ago indicator`.
 
-Continue per TECH_SPEC §16: Refresh button UI, analytics, KV adapter, Wrangler/OpenNext deploy.
+### Remaining slices (S25+)
+
+Continue per TECH_SPEC §16: analytics, KV adapter, Wrangler/OpenNext deploy.
 
 ## 5. Acceptance criteria (global)
 
@@ -157,6 +163,7 @@ A slice is done when:
 | --- | --- | --- | --- |
 | 2026-08-20 | S01 | Resolved | Daily run truncated this plan (deleted S03–S38 and §5–8). Restored from `0955663`. Agents must edit only NEXT_SLICE, checkbox, §6, and §7. |
 | 2026-09-09 | S23 | Resolved | Route wiring landed; S28 hardening still gates deploy, not this slice. |
+| 2026-09-09 | S24 | Resolved | Refresh button UI; cooldown disable uses stored coverage so cold empty views stay clickable. |
 
 ## 7. Progress ledger
 
@@ -185,6 +192,7 @@ A slice is done when:
 | 2026-09-07 | S21 | last-good recovery: total X failure with prior leaves store unchanged + returns cached-after-failure; cold total failure writes empty official-search; partial success merges successes and writes; tests added. | feat(refresh): preserve last good snapshot |
 | 2026-09-08 | S22 | loadLiveDirectory: read-only cache read, empty view on miss, filter on hit preserving liveCount/generatedAt/coverage, propagate cache errors; 5 tests green. | feat(directory): load and filter directory snapshots |
 | 2026-09-09 | S23 | Route wiring: GET / SSR loadLiveDirectory; GET /api/spaces CORS+filters+stale/coverage; POST /api/spaces/refresh cooldown via refreshLiveDirectory; injected X in tests. | feat(routes): wire GET /, GET /api/spaces, POST /api/spaces/refresh |
+| 2026-09-09 | S24 | Refresh button: in-flight + cooldown disable, lib refreshed-ago label, honest error, sample copy. | feat(ui): refresh button with in-flight state and refreshed-ago indicator |
 
 ## 8. Daily completion report template
 

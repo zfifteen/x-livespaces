@@ -85,6 +85,21 @@ button,
   cursor: pointer;
 }
 
+button:disabled,
+.directory-refresh__button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.directory-refresh {
+  margin: 0.75rem 0 0;
+}
+
+.directory-refresh__error {
+  color: #f4212e;
+  margin: 0.5rem 0 0;
+}
+
 .space-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));

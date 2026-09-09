@@ -1,12 +1,11 @@
 /**
- * Full directory chrome: count, search, filters, grid.
+ * Full directory chrome: count, search, filters, grid, Refresh.
  *
- * The home page passes an empty snapshot during Phase 1. Phase 3 loads
- * `DirectorySnapshot` from `loadLiveDirectory` and feeds it here.
  * Recently Shared rail is out of MVP.
  */
 
 import { DirectoryFilterBar } from "@/components/directory/DirectoryFilterBar";
+import { DirectoryRefreshControl } from "@/components/directory/DirectoryRefreshControl";
 import { DirectorySearchBar } from "@/components/directory/DirectorySearchBar";
 import { LiveSpaceCount } from "@/components/directory/LiveSpaceCount";
 import { LiveSpaceGrid } from "@/components/directory/LiveSpaceGrid";
@@ -20,13 +19,23 @@ type DirectoryPageShellProps = {
 export function DirectoryPageShell({ snapshot }: DirectoryPageShellProps) {
   const filters = snapshot?.appliedFilters ?? DEFAULT_DIRECTORY_FILTERS;
   const visibleCards = snapshot?.visibleCards ?? [];
+  const generatedAtIso =
+    snapshot?.coverage !== undefined
+      ? snapshot.generatedAt.toISOString()
+      : undefined;
 
   return (
     <main className="directory">
       <header className="directory__hero">
         <h1>LiveSpaces</h1>
-        <p>The public directory for live conversations on X.</p>
-        <LiveSpaceCount count={snapshot?.liveCount} generatedAt={snapshot?.generatedAt} />
+        <p>
+          A broad sample of live Spaces — not every live Space on X.
+        </p>
+        <LiveSpaceCount
+          count={snapshot?.liveCount}
+          generatedAt={snapshot?.generatedAt}
+        />
+        <DirectoryRefreshControl generatedAtIso={generatedAtIso} />
       </header>
       <DirectorySearchBar filters={filters} />
       <DirectoryFilterBar filters={filters} />
