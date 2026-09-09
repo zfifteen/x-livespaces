@@ -1,0 +1,24 @@
+# x-livespaces Cloudflare Worker (OpenNext).
+# Operator fills KV ids at S29. Do not invent account or namespace IDs.
+# No Workers edge runtime key. Node.js via nodejs_compat.
+
+name = "x-livespaces"
+main = ".open-next/worker.js"
+compatibility_date = "2026-09-09"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# Directory snapshot (S26): key snapshot:v1. Soft TTL is generatedAt in app code.
+[[kv_namespaces]]
+binding = "LIVE_DIRECTORY"
+id = "REPLACE_WITH_LIVE_DIRECTORY_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_LIVE_DIRECTORY_KV_PREVIEW_ID"
+
+# OpenNext incremental cache — NEVER the same namespace as LIVE_DIRECTORY.
+[[kv_namespaces]]
+binding = "NEXT_INC_CACHE_KV"
+id = "REPLACE_WITH_NEXT_INC_CACHE_KV_NAMESPACE_ID"
+preview_id = "REPLACE_WITH_NEXT_INC_CACHE_KV_PREVIEW_ID"

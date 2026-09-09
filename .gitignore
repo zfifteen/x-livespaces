@@ -11,5 +11,8 @@ dist/
 .env
 .env.local
 .env.*.local
+.open-next/
+.wrangler/
+.dev.vars
 .DS_Store
 npm-debug.log*
