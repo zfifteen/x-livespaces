@@ -28,13 +28,16 @@ function card(id: string, title: string): LiveSpaceCard {
 }
 
 function snapshot(overrides: Partial<DirectorySnapshot> = {}): DirectorySnapshot {
-  return {
+  const base: DirectorySnapshot = {
     generatedAt: overrides.generatedAt ?? new Date("2026-09-01T12:00:00.000Z"),
     liveCount: overrides.liveCount ?? 1,
     appliedFilters: overrides.appliedFilters ?? DEFAULT_DIRECTORY_FILTERS,
     visibleCards: overrides.visibleCards ?? [card("1AAA", "Alpha")],
-    coverage: overrides.coverage,
   };
+  if (overrides.coverage !== undefined) {
+    return { ...base, coverage: overrides.coverage };
+  }
+  return base;
 }
 
 describe("createInMemoryLiveDirectoryCache", () => {

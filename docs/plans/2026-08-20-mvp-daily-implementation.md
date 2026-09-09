@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S23**
+**NEXT_SLICE: S24**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -131,9 +131,15 @@
   - Modify: `src/lib/directory/load-live-directory.ts`; create its test.
   - Commit: `feat(directory): load and filter directory snapshots`.
 
-### Remaining slices (S23+)
+- [x] **S23 — Wire GET /, GET /api/spaces, POST /api/spaces/refresh.**
+  - `GET /` SSR via `loadLiveDirectory` and shared cache; never calls X.
+  - `GET /api/spaces` JSON with CORS `*`, directory filters, `stale` and `coverage`.
+  - `POST /api/spaces/refresh` calls `refreshLiveDirectory` under the 1800s cooldown.
+  - Commit: `feat(routes): wire GET /, GET /api/spaces, POST /api/spaces/refresh`.
 
-Continue per TECH_SPEC §16 after load/refresh: wire routes, analytics, Wrangler/OpenNext deploy.
+### Remaining slices (S24+)
+
+Continue per TECH_SPEC §16: Refresh button UI, analytics, KV adapter, Wrangler/OpenNext deploy.
 
 ## 5. Acceptance criteria (global)
 
@@ -150,6 +156,7 @@ A slice is done when:
 | Date | Slice | Status | Notes |
 | --- | --- | --- | --- |
 | 2026-08-20 | S01 | Resolved | Daily run truncated this plan (deleted S03–S38 and §5–8). Restored from `0955663`. Agents must edit only NEXT_SLICE, checkbox, §6, and §7. |
+| 2026-09-09 | S23 | Resolved | Route wiring landed; S28 hardening still gates deploy, not this slice. |
 
 ## 7. Progress ledger
 
@@ -177,6 +184,7 @@ A slice is done when:
 | 2026-09-06 | S20 | refreshLiveDirectory success/cooldown: inject env+search, fresh skip, cold/stale fan-out+merge+write official-search, extraKeywords only when cold; tests green; typecheck clean for slice. | feat(refresh): rebuild directory snapshots |
 | 2026-09-07 | S21 | last-good recovery: total X failure with prior leaves store unchanged + returns cached-after-failure; cold total failure writes empty official-search; partial success merges successes and writes; tests added. | feat(refresh): preserve last good snapshot |
 | 2026-09-08 | S22 | loadLiveDirectory: read-only cache read, empty view on miss, filter on hit preserving liveCount/generatedAt/coverage, propagate cache errors; 5 tests green. | feat(directory): load and filter directory snapshots |
+| 2026-09-09 | S23 | Route wiring: GET / SSR loadLiveDirectory; GET /api/spaces CORS+filters+stale/coverage; POST /api/spaces/refresh cooldown via refreshLiveDirectory; injected X in tests. | feat(routes): wire GET /, GET /api/spaces, POST /api/spaces/refresh |
 
 ## 8. Daily completion report template
 

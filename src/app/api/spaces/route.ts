@@ -1,25 +1,29 @@
 /**
- * GET /api/spaces — JSON directory for the UI and future public API.
- *
- * Intended logic:
- * 1. Parse request URL search params into `DirectoryFilters`.
- * 2. `loadLiveDirectory` with the shared cache and `new Date()`.
- * 3. Serialize snapshot (Dates as ISO strings).
- * 4. Map domain errors through `liveSpacesErrorToHttp`.
- *
- * Phase 1 always returns 501 from the not-implemented load path once wired.
- * Until then, return 501 explicitly so clients have a stable contract.
+ * GET /api/spaces — JSON directory for the UI and public API (TECH_SPEC §8).
  */
 
-import { notImplementedYet } from "@/domain/result";
-import { liveSpacesErrorToHttp } from "@/lib/http/live-spaces-error-to-http";
+import { getSharedLiveDirectoryCache } from "@/lib/cache/shared-live-directory-cache";
+import {
+  GET_SPACES_CORS_ORIGIN,
+  handleGetSpaces,
+} from "@/lib/http/handle-get-spaces";
 
-export function GET(request: Request): Response {
-  void request;
-  const result = notImplementedYet("GET /api/spaces");
-  if (!result.ok) {
-    const http = liveSpacesErrorToHttp(result.error);
-    return Response.json(http, { status: http.status });
-  }
-  return Response.json(result.value);
+const DEFAULT_REFRESH_COOLDOWN_SECONDS = 1800;
+
+export async function GET(request: Request): Promise<Response> {
+  return handleGetSpaces(request, {
+    cache: getSharedLiveDirectoryCache(),
+    now: new Date(),
+    refreshCooldownSeconds: DEFAULT_REFRESH_COOLDOWN_SECONDS,
+  });
+}
+
+export function OPTIONS(): Response {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": GET_SPACES_CORS_ORIGIN,
+      "Access-Control-Allow-Methods": "GET, OPTIONS",
+    },
+  });
 }

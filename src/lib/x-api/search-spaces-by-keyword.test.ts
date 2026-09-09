@@ -89,7 +89,7 @@ describe("searchSpacesByKeyword", () => {
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0]!;
-    expect(String(url)).toBe(
+    expect(url).toBe(
       `${OFFICIAL_X_API_ORIGIN}/2/spaces/search?query=a&state=live&space.fields=title%2Cparticipant_count%2Cstarted_at%2Cscheduled_start%2Clang%2Cstate`,
     );
     expect(init).toMatchObject({

@@ -97,7 +97,6 @@ export async function refreshLiveDirectory(
 
   const batches: (readonly LiveSpaceCard[])[] = [];
   let anySearchSucceeded = false;
-  let lastSearchError: LiveSpacesError | undefined;
 
   for (const keyword of keywords) {
     const searchResult = await request.searchSpacesByKeyword({
@@ -106,7 +105,6 @@ export async function refreshLiveDirectory(
       state: "live",
     });
     if (!searchResult.ok) {
-      lastSearchError = searchResult.error;
       continue;
     }
     anySearchSucceeded = true;

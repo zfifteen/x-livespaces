@@ -31,11 +31,13 @@ export function createInMemoryLiveDirectoryCache(): LiveDirectoryCache {
 
   return {
     readSnapshot: async (): Promise<Result<DirectorySnapshot | undefined, LiveSpacesError>> => {
+      await Promise.resolve();
       return ok(stored);
     },
     writeSnapshot: async (
       snapshot: DirectorySnapshot,
     ): Promise<Result<void, LiveSpacesError>> => {
+      await Promise.resolve();
       stored = snapshot;
       return ok(undefined);
     },
