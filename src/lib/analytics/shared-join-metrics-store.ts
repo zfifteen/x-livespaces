@@ -1,17 +1,18 @@
 /**
- * Process-local join counter. KV adapter lands in S26.
+ * Shared join counter: KV when LIVE_DIRECTORY is bound, else in-memory.
  */
 
-import {
-  createInMemoryJoinMetricsStore,
-  type JoinMetricsStore,
-} from "@/lib/analytics/join-metrics-store";
+import type { JoinMetricsStore } from "@/lib/analytics/join-metrics-store";
+import { resolveJoinMetricsStore } from "@/lib/analytics/kv-join-metrics-store";
+import type { KvNamespaceLike } from "@/lib/cache/kv-namespace";
 
 let sharedJoinMetricsStore: JoinMetricsStore | undefined;
 
-export function getSharedJoinMetricsStore(): JoinMetricsStore {
+export function getSharedJoinMetricsStore(
+  kv?: KvNamespaceLike,
+): JoinMetricsStore {
   if (sharedJoinMetricsStore === undefined) {
-    sharedJoinMetricsStore = createInMemoryJoinMetricsStore();
+    sharedJoinMetricsStore = resolveJoinMetricsStore(kv);
   }
   return sharedJoinMetricsStore;
 }

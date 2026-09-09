@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S26**
+**NEXT_SLICE: S27**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -149,9 +149,14 @@
   - Store failures return 204 (fail silent). No PII.
   - Commit: `feat(analytics): web analytics snippet + first-party join beacon`.
 
-### Remaining slices (S26+)
+- [x] **S26 — KV adapter: createKvLiveDirectoryCache.**
+  - LIVE_DIRECTORY key `snapshot:v1`; no KV expiry; 25 MiB cap; fake KV in tests.
+  - `resolveLiveDirectoryCache` selects KV vs in-memory; join counters share the same binding keys `metrics:joins:{day}`.
+  - Commit: `feat(cache): Cloudflare KV live-directory adapter`.
 
-Continue per TECH_SPEC §16: KV adapter, Wrangler/OpenNext deploy.
+### Remaining slices (S27+)
+
+Continue per TECH_SPEC §16: Wrangler/OpenNext deploy.
 
 ## 5. Acceptance criteria (global)
 
@@ -171,6 +176,7 @@ A slice is done when:
 | 2026-09-09 | S23 | Resolved | Route wiring landed; S28 hardening still gates deploy, not this slice. |
 | 2026-09-09 | S24 | Resolved | Refresh button UI; cooldown disable uses stored coverage so cold empty views stay clickable. |
 | 2026-09-09 | S25 | Resolved | Join beacon + Web Analytics placeholder; KV join counter still in-memory until S26. |
+| 2026-09-09 | S26 | Resolved | KV adapter + selection; no namespace IDs invented. |
 
 ## 7. Progress ledger
 
@@ -201,6 +207,7 @@ A slice is done when:
 | 2026-09-09 | S23 | Route wiring: GET / SSR loadLiveDirectory; GET /api/spaces CORS+filters+stale/coverage; POST /api/spaces/refresh cooldown via refreshLiveDirectory; injected X in tests. | feat(routes): wire GET /, GET /api/spaces, POST /api/spaces/refresh |
 | 2026-09-09 | S24 | Refresh button: in-flight + cooldown disable, lib refreshed-ago label, honest error, sample copy. | feat(ui): refresh button with in-flight state and refreshed-ago indicator |
 | 2026-09-09 | S25 | Web Analytics snippet (env token only) + Join sendBeacon JSON Blob before nav; POST /api/analytics/join increments metrics:joins:{day}. | feat(analytics): web analytics snippet + first-party join beacon |
+| 2026-09-09 | S26 | createKvLiveDirectoryCache snapshot:v1 + join metrics KV; resolve* selects KV vs memory via injected binding. | feat(cache): Cloudflare KV live-directory adapter |
 
 ## 8. Daily completion report template
 
