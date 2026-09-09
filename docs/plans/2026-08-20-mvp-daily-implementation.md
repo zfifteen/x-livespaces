@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S29**
+**NEXT_SLICE: S30**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -162,9 +162,13 @@
   - Warm all-empty keeps last-good; cold total failure does not write; single-flight 429; sample copy.
   - Commit: `feat(refresh): falsifier hardening — last-good, no cooldown poisoning, single-flight 429`.
 
-### Remaining slices (S29+)
+- [x] **S29 — Cloudflare deploy config + in-worker rate limit.**
+  - wrangler.toml KV placeholders + GET_SPACES_RATE_LIMITER 60/min/IP; OpenNext bindings wired; executable runbook.
+  - Commit: `feat(deploy): final wrangler config + executable deploy runbook`.
 
-Operator-gated Cloudflare deploy, then S30 polish.
+### Remaining slices (S30)
+
+Post-deploy smoke, SEO, copy polish after coordinator deploy.
 
 ## 5. Acceptance criteria (global)
 
@@ -187,6 +191,7 @@ A slice is done when:
 | 2026-09-09 | S26 | Resolved | KV adapter + selection; no namespace IDs invented. |
 | 2026-09-09 | S27 | Resolved | wrangler + OpenNext config; OpenNext build succeeded locally; no live deploy. |
 | 2026-09-09 | S28 | Resolved | Refresh falsifier hardening; single-flight is per isolate. |
+| 2026-09-09 | S29 | Resolved | In-worker GET /api/spaces 60/min/IP; runbook is coordinator-executable. |
 
 ## 7. Progress ledger
 
@@ -220,6 +225,7 @@ A slice is done when:
 | 2026-09-09 | S26 | createKvLiveDirectoryCache snapshot:v1 + join metrics KV; resolve* selects KV vs memory via injected binding. | feat(cache): Cloudflare KV live-directory adapter |
 | 2026-09-09 | S27 | wrangler.toml + OpenNext 1.20.6 + next 16.3.3 + runbook; OpenNext build OK; no wrangler login/deploy. | feat(deploy): wrangler + OpenNext config and deploy runbook |
 | 2026-09-09 | S28 | Warm empty last-good; cold fail no write; 429 single-flight; sample copy; startedAt older-first comment. | feat(refresh): falsifier hardening — last-good, no cooldown poisoning, single-flight 429 |
+| 2026-09-09 | S29 | In-worker 60/min/IP rate limit; KV placeholders; executable deploy runbook. | feat(deploy): final wrangler config + executable deploy runbook |
 
 ## 8. Daily completion report template
 

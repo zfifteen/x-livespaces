@@ -5,6 +5,11 @@ import type { DirectorySnapshot } from "@/domain/directory-snapshot";
 import type { LiveSpaceCard } from "@/domain/live-space-card";
 import { createInMemoryLiveDirectoryCache } from "@/lib/cache/live-directory-cache";
 import { handleGetSpaces } from "@/lib/http/handle-get-spaces";
+import {
+  GET_SPACES_RATE_LIMIT,
+  GET_SPACES_RATE_WINDOW_SECONDS,
+  createWorkersBindingGetSpacesRateLimiter,
+} from "@/lib/http/get-spaces-rate-limit";
 
 function card(
   overrides: Partial<LiveSpaceCard> & { id: string },
@@ -154,5 +159,35 @@ describe("handleGetSpaces", () => {
     expect(body.liveCount).toBe(0);
     expect(body.visibleCards).toEqual([]);
     expect(body.stale).toBe(false);
+  });
+
+  it("returns 429 Retry-After when the same IP exceeds 60 GET /api/spaces per minute", async () => {
+    const cache = createInMemoryLiveDirectoryCache();
+    const counts = new Map<string, number>();
+    const rateLimiter = createWorkersBindingGetSpacesRateLimiter({
+      limit: async ({ key }) => {
+        await Promise.resolve();
+        const next = (counts.get(key) ?? 0) + 1;
+        counts.set(key, next);
+        return { success: next <= GET_SPACES_RATE_LIMIT };
+      },
+    });
+    const now = new Date("2026-09-09T12:00:00.000Z");
+    const request = new Request("https://livespaces.example/api/spaces", {
+      headers: { "CF-Connecting-IP": "203.0.113.9" },
+    });
+    const deps = { cache, now, refreshCooldownSeconds: 1800, rateLimiter };
+
+    for (let i = 0; i < GET_SPACES_RATE_LIMIT; i += 1) {
+      const allowed = await handleGetSpaces(request, deps);
+      expect(allowed.status).toBe(200);
+    }
+
+    const denied = await handleGetSpaces(request, deps);
+    expect(denied.status).toBe(429);
+    expect(denied.headers.get("Retry-After")).toBe(
+      String(GET_SPACES_RATE_WINDOW_SECONDS),
+    );
+    expect(denied.headers.get("Access-Control-Allow-Origin")).toBe("*");
   });
 });

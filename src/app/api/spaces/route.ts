@@ -2,7 +2,7 @@
  * GET /api/spaces — JSON directory for the UI and public API (TECH_SPEC §8).
  */
 
-import { getSharedLiveDirectoryCache } from "@/lib/cache/shared-live-directory-cache";
+import { getLiveSpacesWorkerRuntime } from "@/lib/cloudflare/live-spaces-worker-runtime";
 import {
   GET_SPACES_CORS_ORIGIN,
   handleGetSpaces,
@@ -11,10 +11,12 @@ import {
 const DEFAULT_REFRESH_COOLDOWN_SECONDS = 1800;
 
 export async function GET(request: Request): Promise<Response> {
+  const runtime = await getLiveSpacesWorkerRuntime();
   return handleGetSpaces(request, {
-    cache: getSharedLiveDirectoryCache(),
+    cache: runtime.cache,
     now: new Date(),
     refreshCooldownSeconds: DEFAULT_REFRESH_COOLDOWN_SECONDS,
+    rateLimiter: runtime.rateLimiter,
   });
 }
 

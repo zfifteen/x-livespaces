@@ -1,16 +1,29 @@
-# Cloudflare deploy runbook (S27 config; S29 applies live)
+# Cloudflare deploy runbook (S29)
 
-**Do not** `wrangler login`, `wrangler deploy`, or `wrangler secret put` until Fate/Howard go/no-go on S29.
+Coordinator executes this after the S29 commit is on `origin/main`. Do not invent account or KV namespace IDs. Never echo tokens. Never put secrets in argv, git, or chat.
 
-Staging vs prod: use Wrangler `[env.staging]` later if needed; this file is the prod Worker `x-livespaces`. Preview KV ids go in `preview_id`. Keep `LIVE_DIRECTORY` and `NEXT_INC_CACHE_KV` as **two namespaces**. Never share. Never invent account or namespace IDs.
+**Worker name:** `x-livespaces`  
+**Bindings:** `LIVE_DIRECTORY` (snapshot key `snapshot:v1`, join counters `metrics:joins:{day}`), `NEXT_INC_CACHE_KV` (OpenNext ISR — **never** the same namespace), `GET_SPACES_RATE_LIMITER` (60 req / 60s per IP on `GET /api/spaces`).  
+**Rate limit namespace_id:** `1001` (developer-chosen integer in `wrangler.toml`, not a Cloudflare resource id).  
+**Secret:** `X_API_BEARER_TOKEN` via `wrangler secret put` (stdin from `~/.config/hxls-x-bearer-token`). Missing bearer → `POST /api/spaces/refresh` returns **500**; `GET /` and `GET /api/spaces` still serve last KV.
 
-## 1. Bump and local verify (already in repo)
+Account has **no zones**. Do **not** create a zone rate-limit rule. Limiting is in-worker.
 
-- `next` 16.3.3, `@opennextjs/cloudflare@1.20.6`, `wrangler` 4.125.0
-- `npm run typecheck && npm test && npm run lint && npm run build`
-- **Measured 2026-09-09:** `npx opennextjs-cloudflare build` succeeded on this box (produced `.open-next/worker.js`). Box Node was 20.19.2 despite `engines.node >= 22` / wrangler peer; treat Node 22 as the documented runtime. Do not commit `.open-next/`.
+Staging vs prod: this file is prod Worker `x-livespaces`. Preview KV ids go in `preview_id`. Add `[env.staging]` later if needed.
 
-## 2. Create KV namespaces (operator, S29)
+Node 22 is the documented runtime (`engines.node >= 22`).
+
+## 0. Auth (do not print)
+
+```bash
+cd /workspace/x-livespaces
+git pull --ff-only origin main
+export CLOUDFLARE_API_TOKEN
+CLOUDFLARE_API_TOKEN=$(cat ~/.config/hxls-cloudflare-token)
+# never echo CLOUDFLARE_API_TOKEN
+```
+
+## 1. Create two KV namespaces (live discovery)
 
 ```bash
 npx wrangler kv namespace create LIVE_DIRECTORY
@@ -19,42 +32,69 @@ npx wrangler kv namespace create NEXT_INC_CACHE_KV
 npx wrangler kv namespace create NEXT_INC_CACHE_KV --preview
 ```
 
-Paste the returned ids into `wrangler.toml` replacing:
+Paste the returned ids into `wrangler.toml` replacing **only**:
 
 - `REPLACE_WITH_LIVE_DIRECTORY_KV_NAMESPACE_ID` / `REPLACE_WITH_LIVE_DIRECTORY_KV_PREVIEW_ID`
 - `REPLACE_WITH_NEXT_INC_CACHE_KV_NAMESPACE_ID` / `REPLACE_WITH_NEXT_INC_CACHE_KV_PREVIEW_ID`
 
-## 3. Secrets (operator, S29)
+Do not invent ids. Do not add `account_id`. Do not share the two namespaces.
+
+## 2. Local verify (already green on S29 commit)
 
 ```bash
-npx wrangler secret put X_API_BEARER_TOKEN
-# optional Web Analytics is a dashboard token, not wrangler.toml
+npx tsc --noEmit
+npx vitest run
+npx eslint .
+npx next build
 ```
 
-Missing bearer: refresh returns 500; reads still serve last KV snapshot.
-
-## 4. Build and deploy (operator, S29)
+## 3. OpenNext Worker build
 
 ```bash
 npx opennextjs-cloudflare build
+```
+
+Must produce `.open-next/worker.js`. Do not commit `.open-next/`.
+
+## 4. Put X bearer (stdin, never argv)
+
+```bash
+npx wrangler secret put X_API_BEARER_TOKEN < ~/.config/hxls-x-bearer-token
+```
+
+Optional Web Analytics (omit if no token):
+
+```bash
+npx wrangler secret put CLOUDFLARE_WEB_ANALYTICS_TOKEN
+```
+
+(paste from a local file via stdin; never a real token in git). Empty/placeholder snippet stays unrendered.
+
+## 5. Deploy
+
+```bash
 npx wrangler deploy
 ```
 
-`package.json` scripts: `build:worker`, `preview:worker` (preview still needs filled KV ids).
+Record the `*.workers.dev` URL. The live URL must serve the app.
 
-## 5. Post-deploy smoke
+Equivalent: `npm run deploy:worker` (build + deploy) after KV ids are filled and the secret is put.
+
+## 6. In-worker rate limit (already in the Worker)
+
+`GET /api/spaces` uses `GET_SPACES_RATE_LIMITER.limit({ key: ip })` (`CF-Connecting-IP`). Over 60/min → **429** + `Retry-After`. If the binding is missing at runtime, the Worker falls back to a `LIVE_DIRECTORY` KV fixed window (`ratelimit:get-spaces:{ip}:{window}`). OPTIONS is not limited.
+
+## 7. Post-deploy smoke
 
 1. Cold KV: `GET /` empty board; Refresh enabled.
 2. One successful `POST /api/spaces/refresh` (or UI Refresh) with bearer set.
 3. Immediate second Refresh: cooldown skip (`refreshed: false`), no extra X fan-out.
-4. Last-good: break X (invalid bearer) with a stored snapshot — board stays; coverage `cached-after-failure`.
-5. Optional: custom domain/routes; set `CLOUDFLARE_WEB_ANALYTICS_TOKEN` in Worker env if using the snippet.
+4. Last-good: invalid bearer with a stored snapshot — board stays; coverage `cached-after-failure`.
+5. Missing bearer: refresh **500**; `GET /api/spaces` still serves last KV.
+6. Rate limit: 61st `GET /api/spaces` from one IP in a minute → 429 + Retry-After.
+7. Optional: custom domain later; Web Analytics token as above.
 
-## 6. Rate limit (operator dashboard — not wrangler.toml)
-
-Cloudflare zone rule: **60 requests / minute / IP** on `GET /api/spaces`. Cannot be expressed as the only control in `wrangler.toml`.
-
-## 7. X API facts (do not treat fan-out as a census)
+## 8. X API facts (fan-out is not a census)
 
 - `GET /2/spaces/search` **requires** `query`
 - `state=live` or `scheduled` (MVP uses live)

@@ -3,7 +3,7 @@
  */
 
 import { DirectoryPageShell } from "@/components/directory/DirectoryPageShell";
-import { getSharedLiveDirectoryCache } from "@/lib/cache/shared-live-directory-cache";
+import { getLiveSpacesWorkerRuntime } from "@/lib/cloudflare/live-spaces-worker-runtime";
 import { loadHomeDirectorySnapshot } from "@/lib/directory/load-home-directory";
 
 type HomePageProps = {
@@ -28,10 +28,11 @@ function searchParamsToURLSearchParams(
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const raw = await searchParams;
+  const runtime = await getLiveSpacesWorkerRuntime();
   const snapshot = await loadHomeDirectorySnapshot(
     searchParamsToURLSearchParams(raw),
     {
-      cache: getSharedLiveDirectoryCache(),
+      cache: runtime.cache,
       now: new Date(),
     },
   );

@@ -1,5 +1,5 @@
 # x-livespaces Cloudflare Worker (OpenNext).
-# Operator fills KV ids at S29. Do not invent account or namespace IDs.
+# Coordinator fills KV ids at deploy. Do not invent account or namespace IDs.
 # No Workers edge runtime key. Node.js via nodejs_compat.
 
 name = "x-livespaces"
@@ -22,3 +22,13 @@ preview_id = "REPLACE_WITH_LIVE_DIRECTORY_KV_PREVIEW_ID"
 binding = "NEXT_INC_CACHE_KV"
 id = "REPLACE_WITH_NEXT_INC_CACHE_KV_NAMESPACE_ID"
 preview_id = "REPLACE_WITH_NEXT_INC_CACHE_KV_PREVIEW_ID"
+
+# In-worker GET /api/spaces limit: 60 req / 60s per IP.
+# namespace_id is a developer-chosen integer unique on the account, not a CF resource id.
+[[ratelimits]]
+name = "GET_SPACES_RATE_LIMITER"
+namespace_id = "1001"
+
+[ratelimits.simple]
+limit = 60
+period = 60

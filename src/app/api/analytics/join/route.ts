@@ -3,11 +3,12 @@
  */
 
 import { handlePostJoinBeacon } from "@/lib/analytics/handle-post-join-beacon";
-import { getSharedJoinMetricsStore } from "@/lib/analytics/shared-join-metrics-store";
+import { getLiveSpacesWorkerRuntime } from "@/lib/cloudflare/live-spaces-worker-runtime";
 
 export async function POST(request: Request): Promise<Response> {
+  const runtime = await getLiveSpacesWorkerRuntime();
   return handlePostJoinBeacon(request, {
-    store: getSharedJoinMetricsStore(),
+    store: runtime.joinStore,
     now: new Date(),
   });
 }
