@@ -284,7 +284,7 @@ describe("refreshLiveDirectory", () => {
     expect(searchMock).toHaveBeenCalledTimes(5);
   });
 
-  it("on total X failure with empty cache: writes empty official-search snapshot", async () => {
+  it("on total X failure with empty cache: does not write, so cooldown is not poisoned", async () => {
     const cache = createInMemoryLiveDirectoryCache();
     const now = new Date("2026-09-05T12:00:00.000Z");
 
@@ -310,16 +310,52 @@ describe("refreshLiveDirectory", () => {
     if (!result.ok) return;
     expect(result.value.refreshed).toBe(true);
     const snap = result.value.snapshot;
-    expect(snap.generatedAt).toEqual(now);
     expect(snap.liveCount).toBe(0);
     expect(snap.visibleCards).toEqual([]);
-    expect(snap.coverage).toBe("official-search");
-    expect(snap.appliedFilters).toEqual(DEFAULT_DIRECTORY_FILTERS);
+    expect(snap.coverage).toBeUndefined();
 
     const readBack = await cache.readSnapshot();
     expect(readBack.ok).toBe(true);
     if (!readBack.ok) return;
-    expect(readBack.value).toEqual(snap);
+    expect(readBack.value).toBeUndefined();
+  });
+
+  it("on warm all-empty success: keeps prior KV and returns cached-after-failure refreshed:false", async () => {
+    const cache = createInMemoryLiveDirectoryCache();
+    const prior = snapshot({
+      generatedAt: new Date("2026-09-05T11:00:00.000Z"),
+      liveCount: 2,
+      visibleCards: [card("1OLD", "Old"), card("1TWO", "Two")],
+      coverage: "official-search",
+    });
+    await cache.writeSnapshot(prior);
+
+    const searchMock = vi.fn<SearchSpacesByKeywordFn>(() =>
+      Promise.resolve(ok([] as readonly LiveSpaceCard[])),
+    );
+
+    const result = await refreshLiveDirectory(
+      makeRequest({
+        cache,
+        now: new Date("2026-09-05T12:00:00.000Z"),
+        extraKeywords: ["esperanto"],
+        searchSpacesByKeyword: searchMock,
+      }),
+    );
+
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(result.value.refreshed).toBe(false);
+    expect(result.value.snapshot.coverage).toBe("cached-after-failure");
+    expect(result.value.snapshot.visibleCards).toEqual(prior.visibleCards);
+    expect(result.value.snapshot.generatedAt).toEqual(prior.generatedAt);
+    const keywords = searchMock.mock.calls.map((c) => c[0].keywordQuery);
+    expect(keywords).toEqual(["a", "e", "i", "o", "u"]);
+
+    const readBack = await cache.readSnapshot();
+    expect(readBack.ok).toBe(true);
+    if (!readBack.ok) return;
+    expect(readBack.value).toEqual(prior);
   });
 
   it("on partial success: merges successful batches and writes official-search", async () => {

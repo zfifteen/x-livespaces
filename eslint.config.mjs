@@ -23,6 +23,7 @@ export default defineConfig([
   },
   globalIgnores([
     ".next/**",
+    ".open-next/**",
     "out/**",
     "node_modules/**",
     "coverage/**",

@@ -14,9 +14,11 @@
  * 5. mergeDirectorySources on the successful official batches.
  * 6. Count live cards for liveCount.
  * 7. Write snapshot with coverage "official-search" when any cards arrive
- *    or the cache is empty. On total X failure with a prior snapshot, leave
- *    KV unchanged and return the prior marked coverage "cached-after-failure".
- * 8. Return { snapshot, refreshed: true } when X was called.
+ *    or the cache is empty (cold success). Warm all-empty success keeps prior
+ *    KV and returns it as cached-after-failure with refreshed: false.
+ *    Cold total X failure does not write (no cooldown poison).
+ * 8. `refreshed: true` means X was called, not that KV was updated — except
+ *    warm all-empty last-good, which Hazard locked as refreshed: false.
  *
  * No tweet / public-post harvest. No cron. Load-time filters stay in
  * loadLiveDirectory.
@@ -43,7 +45,7 @@ export type SearchSpacesByKeywordFn = (
 export type RefreshLiveDirectoryRequest = {
   readonly cache: LiveDirectoryCache;
   readonly now: Date;
-  /** Visitor q; used only when cache is cold (no prior snapshot). */
+  /** Visitor q; used only when cache is cold. Warm refresh ignores extras. */
   readonly extraKeywords: readonly string[];
   readonly readEnvironment: () => Result<LiveSpacesEnvironment, LiveSpacesError>;
   readonly searchSpacesByKeyword: SearchSpacesByKeywordFn;
@@ -121,18 +123,13 @@ export async function refreshLiveDirectory(
       };
       return ok({ snapshot: recovered, refreshed: true });
     }
-    // Cold cache + total failure: empty initial board (write empty official-search).
+    // Cold total failure: do not write generatedAt=now (would poison cooldown).
     const empty: DirectorySnapshot = {
       generatedAt: request.now,
       liveCount: 0,
       appliedFilters: DEFAULT_DIRECTORY_FILTERS,
       visibleCards: [],
-      coverage: "official-search",
     };
-    const writeResult = await request.cache.writeSnapshot(empty);
-    if (!writeResult.ok) {
-      return writeResult;
-    }
     return ok({ snapshot: empty, refreshed: true });
   }
 
@@ -150,6 +147,14 @@ export async function refreshLiveDirectory(
     visibleCards,
     coverage: "official-search",
   };
+
+  if (visibleCards.length === 0 && prior !== undefined) {
+    const recovered: DirectorySnapshot = {
+      ...prior,
+      coverage: "cached-after-failure",
+    };
+    return ok({ snapshot: recovered, refreshed: false });
+  }
 
   // Write when we have cards, or when cache was empty (initial empty board).
   // Partial success always writes the usable merge.

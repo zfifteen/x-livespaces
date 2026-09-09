@@ -6,6 +6,7 @@ import type { LiveSpaceCard } from "@/domain/live-space-card";
 import { err, ok } from "@/domain/result";
 import { createInMemoryLiveDirectoryCache } from "@/lib/cache/live-directory-cache";
 import { handlePostSpacesRefresh } from "@/lib/http/handle-post-spaces-refresh";
+import { createRefreshFlightGate } from "@/lib/http/refresh-flight-gate";
 import type { LiveSpacesEnvironment } from "@/lib/env/read-live-spaces-environment";
 import type { SearchSpacesByKeywordFn } from "@/lib/refresh/refresh-live-directory";
 
@@ -126,5 +127,33 @@ describe("handlePostSpacesRefresh", () => {
     );
     expect(response.status).toBe(500);
     expect(searchCalls).toBe(0);
+  });
+
+  it("returns 429 Retry-After when a second refresh overlaps an in-flight one", async () => {
+    const cache = createInMemoryLiveDirectoryCache();
+    const gate = createRefreshFlightGate();
+    expect(gate.tryAcquire()).toBe(true);
+    let searchCalls = 0;
+
+    const second = await handlePostSpacesRefresh(
+      new Request("https://livespaces.example/api/spaces/refresh", {
+        method: "POST",
+      }),
+      {
+        cache,
+        now: new Date("2026-09-09T12:00:00.000Z"),
+        readEnvironment: () => ok(env),
+        searchSpacesByKeyword: () => {
+          searchCalls += 1;
+          return Promise.resolve(ok([]));
+        },
+        flightGate: gate,
+      },
+    );
+
+    expect(second.status).toBe(429);
+    expect(second.headers.get("Retry-After")).toBe("5");
+    expect(searchCalls).toBe(0);
+    gate.release();
   });
 });

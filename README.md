@@ -1,18 +1,18 @@
 # LiveSpaces
 
-Public directory of live X Spaces.
+Public directory of a broad sample of live X Spaces — not every live Space on X.
 
-Phase 1 skeleton is on `main`. The directory chrome renders; data routes respond `501` until Phase 3.
+Phase 1 skeleton is on `main`. Product definition: [`CONCEPT.md`](./CONCEPT.md). MVP tech spec: [`docs/TECH_SPEC.md`](./docs/TECH_SPEC.md). Execution contract: [`PLAN.md`](./PLAN.md). Agent notes: [`AGENTS.md`](./AGENTS.md). Deploy runbook: [`docs/runbook/cloudflare-deploy.md`](./docs/runbook/cloudflare-deploy.md).
 
-Product definition: [`CONCEPT.md`](./CONCEPT.md). MVP tech spec: [`docs/TECH_SPEC.md`](./docs/TECH_SPEC.md). Execution contract: [`PLAN.md`](./PLAN.md). Agent notes: [`AGENTS.md`](./AGENTS.md).
+## What the MVP directory shows
 
-## What the MVP directory will show
-
-- How many Spaces are live right now
+- How many Spaces are live *in this sample*
 - Keyword search
 - Cards with title, listeners, timing, and a Join button (no host identity)
 - Filters: live only, minimum listeners, language
 - Manual Refresh (30-minute global cooldown). Official Spaces search only; no tweet/public-post harvest.
+
+Browse uses vowel fan-out `a e i o u` (not a census). There is no official “list every live Space” call.
 
 ## Stack
 

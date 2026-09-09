@@ -3,20 +3,34 @@
  *
  * Cooldown is snapshotIsFresh vs env.refreshCooldownSeconds (default 1800).
  * Optional JSON `{ q: string }` becomes extraKeywords on a cold cache only
- * (refreshLiveDirectory already ignores extras when warm).
+ * (warm refresh ignores extras).
+ *
+ * `refreshed: true` means X was called, not that KV was updated.
+ * Concurrent in-flight POSTs return 429 + Retry-After.
  */
 
 import { liveSpacesErrorToHttp } from "@/lib/http/live-spaces-error-to-http";
+import {
+  IN_FLIGHT_RETRY_AFTER_SECONDS,
+  createRefreshFlightGate,
+  getDefaultRefreshFlightGate,
+  type RefreshFlightGate,
+} from "@/lib/http/refresh-flight-gate";
 import { serializeDirectorySnapshot } from "@/lib/http/serialize-directory-snapshot";
 import {
   refreshLiveDirectory,
   type RefreshLiveDirectoryRequest,
 } from "@/lib/refresh/refresh-live-directory";
 
+export { createRefreshFlightGate };
+export type { RefreshFlightGate };
+
 export type HandlePostSpacesRefreshDeps = Omit<
   RefreshLiveDirectoryRequest,
   "extraKeywords"
->;
+> & {
+  readonly flightGate?: RefreshFlightGate;
+};
 
 async function extraKeywordsFromRequest(request: Request): Promise<readonly string[]> {
   const contentType = request.headers.get("content-type") ?? "";
@@ -44,27 +58,51 @@ export async function handlePostSpacesRefresh(
   request: Request,
   deps: HandlePostSpacesRefreshDeps,
 ): Promise<Response> {
-  const extraKeywords = await extraKeywordsFromRequest(request);
-  const result = await refreshLiveDirectory({
-    ...deps,
-    extraKeywords,
-  });
-  if (!result.ok) {
-    const http = liveSpacesErrorToHttp(result.error);
-    return Response.json(http, { status: http.status });
+  const gate = deps.flightGate ?? getDefaultRefreshFlightGate();
+  if (!gate.tryAcquire()) {
+    const http = liveSpacesErrorToHttp({
+      kind: "x-api-rate-limited",
+      retryAfterSeconds: IN_FLIGHT_RETRY_AFTER_SECONDS,
+      message: "A refresh is already in flight",
+    });
+    return Response.json(http, {
+      status: http.status,
+      headers: { "Retry-After": String(IN_FLIGHT_RETRY_AFTER_SECONDS) },
+    });
   }
 
-  const serialized = serializeDirectorySnapshot(result.value.snapshot);
-  if (!serialized.ok) {
-    const http = liveSpacesErrorToHttp(serialized.error);
-    return Response.json(http, { status: http.status });
-  }
+  try {
+    const extraKeywords = await extraKeywordsFromRequest(request);
+    const result = await refreshLiveDirectory({
+      cache: deps.cache,
+      now: deps.now,
+      readEnvironment: deps.readEnvironment,
+      searchSpacesByKeyword: deps.searchSpacesByKeyword,
+      extraKeywords,
+    });
+    if (!result.ok) {
+      const http = liveSpacesErrorToHttp(result.error);
+      const headers: Record<string, string> = {};
+      if (http.retryAfterSeconds !== undefined) {
+        headers["Retry-After"] = String(http.retryAfterSeconds);
+      }
+      return Response.json(http, { status: http.status, headers });
+    }
 
-  return Response.json(
-    {
-      ...serialized.value,
-      refreshed: result.value.refreshed,
-    },
-    { status: 200 },
-  );
+    const serialized = serializeDirectorySnapshot(result.value.snapshot);
+    if (!serialized.ok) {
+      const http = liveSpacesErrorToHttp(serialized.error);
+      return Response.json(http, { status: http.status });
+    }
+
+    return Response.json(
+      {
+        ...serialized.value,
+        refreshed: result.value.refreshed,
+      },
+      { status: 200 },
+    );
+  } finally {
+    gate.release();
+  }
 }

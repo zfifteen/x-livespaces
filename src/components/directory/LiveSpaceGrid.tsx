@@ -13,7 +13,7 @@ export function LiveSpaceGrid({ cards }: LiveSpaceGridProps) {
   if (cards.length === 0) {
     return (
       <p className="space-grid__empty" role="status">
-        No live Spaces in this view yet. The directory skeleton is waiting on Phase 3 data.
+        No snapshot in this view yet. Refresh to load a broad sample of live Spaces.
       </p>
     );
   }

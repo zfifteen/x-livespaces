@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S28**
+**NEXT_SLICE: S29**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -158,9 +158,13 @@
   - next 16.3.3, `@opennextjs/cloudflare@1.20.6`, wrangler 4.125.0; `nodejs_compat`; two KV placeholders; runbook.
   - Commit: `feat(deploy): wrangler + OpenNext config and deploy runbook`.
 
-### Remaining slices (S28+)
+- [x] **S28 — Refresh hardening (falsifier fixes).**
+  - Warm all-empty keeps last-good; cold total failure does not write; single-flight 429; sample copy.
+  - Commit: `feat(refresh): falsifier hardening — last-good, no cooldown poisoning, single-flight 429`.
 
-Continue: S28 refresh hardening, then operator-gated S29 deploy.
+### Remaining slices (S29+)
+
+Operator-gated Cloudflare deploy, then S30 polish.
 
 ## 5. Acceptance criteria (global)
 
@@ -182,6 +186,7 @@ A slice is done when:
 | 2026-09-09 | S25 | Resolved | Join beacon + Web Analytics placeholder; KV join counter still in-memory until S26. |
 | 2026-09-09 | S26 | Resolved | KV adapter + selection; no namespace IDs invented. |
 | 2026-09-09 | S27 | Resolved | wrangler + OpenNext config; OpenNext build succeeded locally; no live deploy. |
+| 2026-09-09 | S28 | Resolved | Refresh falsifier hardening; single-flight is per isolate. |
 
 ## 7. Progress ledger
 
@@ -214,6 +219,7 @@ A slice is done when:
 | 2026-09-09 | S25 | Web Analytics snippet (env token only) + Join sendBeacon JSON Blob before nav; POST /api/analytics/join increments metrics:joins:{day}. | feat(analytics): web analytics snippet + first-party join beacon |
 | 2026-09-09 | S26 | createKvLiveDirectoryCache snapshot:v1 + join metrics KV; resolve* selects KV vs memory via injected binding. | feat(cache): Cloudflare KV live-directory adapter |
 | 2026-09-09 | S27 | wrangler.toml + OpenNext 1.20.6 + next 16.3.3 + runbook; OpenNext build OK; no wrangler login/deploy. | feat(deploy): wrangler + OpenNext config and deploy runbook |
+| 2026-09-09 | S28 | Warm empty last-good; cold fail no write; 429 single-flight; sample copy; startedAt older-first comment. | feat(refresh): falsifier hardening — last-good, no cooldown poisoning, single-flight 429 |
 
 ## 8. Daily completion report template
 

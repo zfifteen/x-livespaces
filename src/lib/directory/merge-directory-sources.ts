@@ -8,7 +8,7 @@
  * 1. Accept one or more official-search card batches.
  * 2. Deduplicate by spaceId (first occurrence wins; later batches drop dupes).
  * 3. Stable-sort: live first, then listenerCount descending, then startedAt
- *    ascending so newer rooms stay visible; undefined dates sort last.
+ *    ascending (older first). Undefined dates sort last.
  * 4. sourceKind remains official-api on every card.
  */
 
