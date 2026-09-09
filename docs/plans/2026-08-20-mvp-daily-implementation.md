@@ -45,7 +45,7 @@
 
 ## 4. Ordered implementation checklist
 
-**NEXT_SLICE: S25**
+**NEXT_SLICE: S26**
 
 ### Milestone A — Reconcile the Phase 1 skeleton with TECH_SPEC v1.3
 
@@ -143,9 +143,15 @@
   - Honest error state; hero copy is a broad sample, not a census.
   - Commit: `feat(ui): refresh button with in-flight state and refreshed-ago indicator`.
 
-### Remaining slices (S25+)
+- [x] **S25 — Analytics: Web Analytics snippet + Join beacon.**
+  - Cloudflare Web Analytics script only when `CLOUDFLARE_WEB_ANALYTICS_TOKEN` is set (placeholder omitted).
+  - Join click sendBeacon JSON Blob before target=_blank; POST `/api/analytics/join` increments `metrics:joins:{day}`.
+  - Store failures return 204 (fail silent). No PII.
+  - Commit: `feat(analytics): web analytics snippet + first-party join beacon`.
 
-Continue per TECH_SPEC §16: analytics, KV adapter, Wrangler/OpenNext deploy.
+### Remaining slices (S26+)
+
+Continue per TECH_SPEC §16: KV adapter, Wrangler/OpenNext deploy.
 
 ## 5. Acceptance criteria (global)
 
@@ -164,6 +170,7 @@ A slice is done when:
 | 2026-08-20 | S01 | Resolved | Daily run truncated this plan (deleted S03–S38 and §5–8). Restored from `0955663`. Agents must edit only NEXT_SLICE, checkbox, §6, and §7. |
 | 2026-09-09 | S23 | Resolved | Route wiring landed; S28 hardening still gates deploy, not this slice. |
 | 2026-09-09 | S24 | Resolved | Refresh button UI; cooldown disable uses stored coverage so cold empty views stay clickable. |
+| 2026-09-09 | S25 | Resolved | Join beacon + Web Analytics placeholder; KV join counter still in-memory until S26. |
 
 ## 7. Progress ledger
 
@@ -193,6 +200,7 @@ A slice is done when:
 | 2026-09-08 | S22 | loadLiveDirectory: read-only cache read, empty view on miss, filter on hit preserving liveCount/generatedAt/coverage, propagate cache errors; 5 tests green. | feat(directory): load and filter directory snapshots |
 | 2026-09-09 | S23 | Route wiring: GET / SSR loadLiveDirectory; GET /api/spaces CORS+filters+stale/coverage; POST /api/spaces/refresh cooldown via refreshLiveDirectory; injected X in tests. | feat(routes): wire GET /, GET /api/spaces, POST /api/spaces/refresh |
 | 2026-09-09 | S24 | Refresh button: in-flight + cooldown disable, lib refreshed-ago label, honest error, sample copy. | feat(ui): refresh button with in-flight state and refreshed-ago indicator |
+| 2026-09-09 | S25 | Web Analytics snippet (env token only) + Join sendBeacon JSON Blob before nav; POST /api/analytics/join increments metrics:joins:{day}. | feat(analytics): web analytics snippet + first-party join beacon |
 
 ## 8. Daily completion report template
 

@@ -3,6 +3,7 @@
  * Host name/avatar/handle are out of MVP (no User expansions).
  */
 
+import { JoinSpaceLink } from "@/components/directory/JoinSpaceLink";
 import type { LiveSpaceCard } from "@/domain/live-space-card";
 
 type LiveSpaceCardViewProps = {
@@ -23,9 +24,7 @@ export function LiveSpaceCardView({ card, timingLabel }: LiveSpaceCardViewProps)
         ))}
       </ul>
       <p className="space-card__timing">{timingLabel}</p>
-      <a className="space-card__join" href={card.joinUrl} target="_blank" rel="noopener noreferrer">
-        Join Space
-      </a>
+      <JoinSpaceLink href={card.joinUrl} spaceId={card.spaceId} />
     </article>
   );
 }
