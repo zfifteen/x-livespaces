@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { spaceIdFromString } from "@/domain/branded-ids";
 import type { LiveSpaceCard } from "@/domain/live-space-card";
-import { formatSpaceTiming } from "@/lib/directory/format-space-timing";
+import {
+  formatSpaceTiming,
+  spaceCardTimingLabel,
+} from "@/lib/directory/format-space-timing";
 
 function card(
   overrides: Partial<LiveSpaceCard> & { id: string },
@@ -210,5 +213,21 @@ describe("formatSpaceTiming", () => {
     if (result.ok) {
       expect(result.value).toBe("Started 30 minutes ago");
     }
+  });
+
+  it("spaceCardTimingLabel returns the formatted string for the grid", () => {
+    const startedAt = new Date("2026-08-28T11:45:00.000Z");
+    expect(
+      spaceCardTimingLabel(
+        card({ id: "1LIVE", startedAt, lifecycleState: "live" }),
+        now,
+      ),
+    ).toBe("Started 15 minutes ago");
+  });
+
+  it("spaceCardTimingLabel returns Timing unavailable when no dates exist", () => {
+    expect(
+      spaceCardTimingLabel(card({ id: "1NODE", lifecycleState: "live" }), now),
+    ).toBe("Timing unavailable");
   });
 });

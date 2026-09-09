@@ -78,3 +78,15 @@ export function formatSpaceTiming(
 
   return ok("Timing unavailable");
 }
+
+/**
+ * Card timing line for the grid. Unwraps Result so the view never formats
+ * and never inspects domain errors.
+ */
+export function spaceCardTimingLabel(card: LiveSpaceCard, now: Date): string {
+  const result = formatSpaceTiming(card, now);
+  if (!result.ok) {
+    return "Timing unavailable";
+  }
+  return result.value;
+}

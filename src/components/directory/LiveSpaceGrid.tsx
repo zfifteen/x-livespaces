@@ -4,13 +4,15 @@
 
 import { LiveSpaceCardView } from "@/components/directory/LiveSpaceCardView";
 import type { LiveSpaceCard } from "@/domain/live-space-card";
+import { spaceCardTimingLabel } from "@/lib/directory/format-space-timing";
 import { EMPTY_SNAPSHOT_COPY } from "@/lib/seo/live-spaces-metadata";
 
 type LiveSpaceGridProps = {
   readonly cards: readonly LiveSpaceCard[];
+  readonly now?: Date;
 };
 
-export function LiveSpaceGrid({ cards }: LiveSpaceGridProps) {
+export function LiveSpaceGrid({ cards, now }: LiveSpaceGridProps) {
   if (cards.length === 0) {
     return (
       <p className="space-grid__empty" role="status">
@@ -19,10 +21,16 @@ export function LiveSpaceGrid({ cards }: LiveSpaceGridProps) {
     );
   }
 
+  const clock = now ?? new Date();
+
   return (
     <div className="space-grid">
       {cards.map((card) => (
-        <LiveSpaceCardView key={card.spaceId} card={card} timingLabel="Timing pending" />
+        <LiveSpaceCardView
+          key={card.spaceId}
+          card={card}
+          timingLabel={spaceCardTimingLabel(card, clock)}
+        />
       ))}
     </div>
   );
